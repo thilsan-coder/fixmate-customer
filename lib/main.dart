@@ -1,30 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'core/theme/app_theme.dart';
-import 'core/routes/app_routes.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
-  runApp(const FixMateApp());
+  runApp(const MyApp());
 }
 
-class FixMateApp extends StatelessWidget {
-  const FixMateApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'FixMate Customer App',
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      initialRoute: AppRoutes.splash,
-      routes: AppRoutes.routes,
+      home: Scaffold(
+        body: Center(
+          child: Text(
+            'FixMate Customer App',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
     );
   }
 }
