@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_assets.dart';
 import '../../../core/routes/app_routes.dart';
-import '../../../core/widgets/custom_button.dart';
 
 class SelectCountryScreen extends StatefulWidget {
   const SelectCountryScreen({super.key});
@@ -12,54 +10,27 @@ class SelectCountryScreen extends StatefulWidget {
 }
 
 class _SelectCountryScreenState extends State<SelectCountryScreen> {
-  String _selectedCountry = 'Sri Lanka';
+  String _selectedCountry = 'United States';
   String _searchQuery = '';
 
   final List<Map<String, String>> _allCountries = [
-    // South Asia & Middle East
-    {'name': 'Sri Lanka', 'code': '+94', 'flag': '🇱🇰'},
-    {'name': 'India', 'code': '+91', 'flag': '🇮🇳'},
-    {'name': 'United Arab Emirates', 'code': '+971', 'flag': '🇦🇪'},
-    {'name': 'Saudi Arabia', 'code': '+966', 'flag': '🇸🇦'},
-    {'name': 'Qatar', 'code': '+974', 'flag': '🇶🇦'},
-    {'name': 'Kuwait', 'code': '+965', 'flag': '🇰🇼'},
-    {'name': 'Oman', 'code': '+968', 'flag': '🇴🇲'},
-    {'name': 'Bahrain', 'code': '+973', 'flag': '🇧🇭'},
-    {'name': 'Pakistan', 'code': '+92', 'flag': '🇵🇰'},
-    {'name': 'Bangladesh', 'code': '+880', 'flag': '🇧🇩'},
-    {'name': 'Maldives', 'code': '+960', 'flag': '🇲🇻'},
-    
-    // North America & Europe
     {'name': 'United States', 'code': '+1', 'flag': '🇺🇸'},
     {'name': 'United Kingdom', 'code': '+44', 'flag': '🇬🇧'},
     {'name': 'Canada', 'code': '+1', 'flag': '🇨🇦'},
     {'name': 'Germany', 'code': '+49', 'flag': '🇩🇪'},
     {'name': 'France', 'code': '+33', 'flag': '🇫🇷'},
-    {'name': 'Italy', 'code': '+39', 'flag': '🇮🇹'},
-    {'name': 'Spain', 'code': '+34', 'flag': '🇪🇸'},
-    {'name': 'Netherlands', 'code': '+31', 'flag': '🇳🇱'},
-    {'name': 'Switzerland', 'code': '+41', 'flag': '🇨🇭'},
-    {'name': 'Sweden', 'code': '+46', 'flag': '🇸🇪'},
-    {'name': 'Norway', 'code': '+47', 'flag': '🇳🇴'},
-    {'name': 'Ireland', 'code': '+353', 'flag': '🇮🇪'},
-
-    // Asia Pacific & Oceania
+    {'name': 'Sri Lanka', 'code': '+94', 'flag': '🇱🇰'},
     {'name': 'Australia', 'code': '+61', 'flag': '🇦🇺'},
-    {'name': 'New Zealand', 'code': '+64', 'flag': '🇳🇿'},
+    {'name': 'India', 'code': '+91', 'flag': '🇮🇳'},
+    {'name': 'United Arab Emirates', 'code': '+971', 'flag': '🇦🇪'},
+    {'name': 'Saudi Arabia', 'code': '+966', 'flag': '🇸🇦'},
+    {'name': 'Qatar', 'code': '+974', 'flag': '🇶🇦'},
     {'name': 'Singapore', 'code': '+65', 'flag': '🇸🇬'},
     {'name': 'Malaysia', 'code': '+60', 'flag': '🇲🇾'},
     {'name': 'Japan', 'code': '+81', 'flag': '🇯🇵'},
-    {'name': 'South Korea', 'code': '+82', 'flag': '🇰🇷'},
-    {'name': 'China', 'code': '+86', 'flag': '🇨🇳'},
-    {'name': 'Thailand', 'code': '+66', 'flag': '🇹🇭'},
-    {'name': 'Indonesia', 'code': '+62', 'flag': '🇮🇩'},
-    {'name': 'Philippines', 'code': '+63', 'flag': '🇵🇭'},
-
-    // Africa & Others
+    {'name': 'Italy', 'code': '+39', 'flag': '🇮🇹'},
+    {'name': 'Spain', 'code': '+34', 'flag': '🇪🇸'},
     {'name': 'South Africa', 'code': '+27', 'flag': '🇿🇦'},
-    {'name': 'Egypt', 'code': '+20', 'flag': '🇪🇬'},
-    {'name': 'Kenya', 'code': '+254', 'flag': '🇰🇪'},
-    {'name': 'Nigeria', 'code': '+234', 'flag': '🇳🇬'},
   ];
 
   @override
@@ -73,78 +44,88 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Select Country'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF005AC2), size: 24),
           onPressed: () => Navigator.pop(context),
         ),
+        title: const Text(
+          'Select Country',
+          style: TextStyle(
+            color: Color(0xFF005AC2),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline_rounded, color: Color(0xFF005AC2), size: 22),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // World Map Header illustration banner
+              // World Map Banner Card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
+                height: 160,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.public_rounded, color: AppColors.primary, size: 30),
-                    ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Choose Your Region',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'To find verified home experts nearby',
-                            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 20),
-
-              // Search Input Field
-              TextField(
-                onChanged: (value) => setState(() => _searchQuery = value),
-                decoration: InputDecoration(
-                  hintText: 'Search country or code...',
-                  prefixIcon: const Icon(Iconsax.search_normal, color: AppColors.textMuted, size: 20),
-                  filled: true,
-                  fillColor: AppColors.background,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    AppAssets.worldMap,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: const Color(0xFF1E293B),
+                        child: const Center(
+                          child: Icon(Icons.public, color: Colors.white54, size: 64),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
               const SizedBox(height: 16),
+
+              // Search Field "Search your country..."
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: TextField(
+                  onChanged: (value) => setState(() => _searchQuery = value),
+                  decoration: const InputDecoration(
+                    hintText: 'Search your country...',
+                    hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                    prefixIcon: Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 20),
+                    filled: false,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
 
               // Countries List
               Expanded(
@@ -159,47 +140,55 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
                       onTap: () {
                         setState(() => _selectedCountry = item['name']!);
                       },
-                      borderRadius: BorderRadius.circular(16),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppColors.primaryLight : Colors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          color: isSelected ? const Color(0xFFF0F6FF) : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: isSelected ? AppColors.primary : AppColors.border,
-                            width: isSelected ? 1.8 : 1.0,
+                            color: isSelected ? const Color(0xFFBFDBFE) : const Color(0xFFF1F5F9),
+                            width: 1.2,
                           ),
                         ),
                         child: Row(
                           children: [
-                            Text(item['flag']!, style: const TextStyle(fontSize: 26)),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item['name']!,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                  Text(
-                                    item['code']!,
-                                    style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                            // Flag
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.04),
+                                    blurRadius: 4,
                                   ),
                                 ],
                               ),
+                              child: Text(item['flag']!, style: const TextStyle(fontSize: 22)),
                             ),
+                            const SizedBox(width: 14),
+
+                            // Country Name
+                            Expanded(
+                              child: Text(
+                                item['name']!,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected ? const Color(0xFF005AC2) : const Color(0xFF1E293B),
+                                ),
+                              ),
+                            ),
+
+                            // Radio Check Icon
                             if (isSelected)
                               Container(
                                 width: 22,
                                 height: 22,
                                 decoration: const BoxDecoration(
-                                  color: AppColors.primary,
+                                  color: Color(0xFF005AC2),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(Icons.check, size: 14, color: Colors.white),
@@ -210,7 +199,7 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
                                 height: 22,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: AppColors.border, width: 1.5),
+                                  border: Border.all(color: const Color(0xFFCBD5E1), width: 1.5),
                                 ),
                               ),
                           ],
@@ -221,16 +210,32 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
                 ),
               ),
 
-              const SizedBox(height: 12),
-
-              // Continue Button
-              CustomButton(
-                text: 'Continue',
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.selectLanguage);
-                },
-              ),
               const SizedBox(height: 10),
+
+              // Full Width "Continue" Button
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, AppRoutes.selectLanguage);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0047AB),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  child: const Text('Continue'),
+                ),
+              ),
+              const SizedBox(height: 8),
             ],
           ),
         ),

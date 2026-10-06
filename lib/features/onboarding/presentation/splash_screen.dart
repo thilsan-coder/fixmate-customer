@@ -109,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF005AC2),
+                  color: AppColors.primary,
                   letterSpacing: -0.5,
                 ),
               ),
@@ -121,7 +121,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF64748B),
+                  color: AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 32),
@@ -134,15 +134,15 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                     width: 140,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE2E8F0),
+                      color: AppColors.border,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: LinearProgressIndicator(
                         value: _progressAnimation.value,
-                        backgroundColor: const Color(0xFFE2E8F0),
-                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF005AC2)),
+                        backgroundColor: AppColors.border,
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
                       ),
                     ),
                   );
@@ -157,7 +157,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 2.0,
-                  color: Color(0xFF005AC2),
+                  color: AppColors.primary,
                 ),
               ),
 
@@ -170,7 +170,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 2.0,
-                  color: Color(0xFF94A3B8),
+                  color: AppColors.textMuted,
                 ),
               ),
               const SizedBox(height: 10),

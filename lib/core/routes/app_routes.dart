@@ -3,6 +3,9 @@ import '../../features/onboarding/presentation/splash_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/presentation/select_country_screen.dart';
 import '../../features/onboarding/presentation/select_language_screen.dart';
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
+import '../../features/auth/presentation/otp_verification_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -19,5 +22,8 @@ class AppRoutes {
         onboarding: (context) => const OnboardingScreen(),
         selectCountry: (context) => const SelectCountryScreen(),
         selectLanguage: (context) => const SelectLanguageScreen(),
+        login: (context) => const LoginScreen(),
+        register: (context) => const RegisterScreen(),
+        otpVerification: (context) => const OtpVerificationScreen(),
       };
 }
