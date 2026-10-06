@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_assets.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/services/session_manager.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -30,12 +31,24 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     _progressController.forward();
 
-    // 5 seconds கழித்து Onboarding Screen-க்கு தானாக செல்லும்
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
-      }
-    });
+    // Auto-check persistent login session
+    _checkSessionAndNavigate();
+  }
+
+  Future<void> _checkSessionAndNavigate({bool isImmediate = false}) async {
+    if (!isImmediate) {
+      await Future.delayed(const Duration(seconds: 5));
+    }
+    if (!mounted) return;
+
+    final loggedIn = await SessionManager.isLoggedIn();
+    if (!mounted) return;
+
+    if (loggedIn) {
+      Navigator.pushReplacementNamed(context, AppRoutes.home);
+    } else {
+      Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
+    }
   }
 
   @override
@@ -44,8 +57,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     super.dispose();
   }
 
-  void _navigateToOnboarding() {
-    Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
+  void _navigateToNext() {
+    _checkSessionAndNavigate(isImmediate: true);
   }
 
   @override
@@ -61,119 +74,163 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               Align(
                 alignment: Alignment.topRight,
                 child: TextButton(
-                  onPressed: _navigateToOnboarding,
+                  onPressed: _navigateToNext,
                   style: TextButton.styleFrom(
                     foregroundColor: const Color(0xFF64748B),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  ),
-                  child: const Text(
-                    'Skip',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF64748B),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    backgroundColor: const Color(0xFFF1F5F9),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Skip',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF64748B)),
+                    ],
                   ),
                 ),
               ),
 
               const Spacer(flex: 2),
 
-              // White Rounded Card with FixMate Logo
-              Container(
-                width: 200,
-                height: 200,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 24,
-                      spreadRadius: 2,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Image.asset(
-                  AppAssets.logo,
-                  fit: BoxFit.contain,
+              // White Rounded Card (Elevation & Soft Shadow) with Logo
+              Center(
+                child: Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 24,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Image.asset(
+                    AppAssets.logo,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        AppAssets.fixmateLogo,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.home_repair_service_rounded,
+                            size: 64,
+                            color: AppColors.primary,
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
+
               const SizedBox(height: 28),
 
-              // Title "FixMate"
+              // App Name "FixMate"
               const Text(
                 'FixMate',
                 style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  fontSize: 34,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF005AC2),
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 6),
 
-              // Subtitle "Expert repairs, Instantly."
+              const SizedBox(height: 8),
+
+              // Subtitle Tagline
               const Text(
                 'Expert repairs, Instantly.',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
+                  color: Color(0xFF475569),
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Progress Bar
-              AnimatedBuilder(
-                animation: _progressAnimation,
-                builder: (context, child) {
-                  return Container(
-                    width: 140,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.border,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: LinearProgressIndicator(
-                        value: _progressAnimation.value,
-                        backgroundColor: AppColors.border,
-                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 14),
-
-              // "INITIALIZING" Text
-              const Text(
-                'INITIALIZING',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 2.0,
-                  color: AppColors.primary,
+                  letterSpacing: 0.2,
                 ),
               ),
 
               const Spacer(flex: 3),
 
-              // Bottom Footer "SECURE ENTERPRISE PLATFORM"
+              // "INITIALIZING..." Label
               const Text(
-                'SECURE ENTERPRISE PLATFORM',
+                'INITIALIZING...',
                 style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 2.0,
-                  color: AppColors.textMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                  color: Color(0xFF94A3B8),
                 ),
               ),
-              const SizedBox(height: 10),
+
+              const SizedBox(height: 14),
+
+              // Thin Smooth Progress Line (Blue on Light Grey)
+              Container(
+                width: 200,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE2E8F0),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+                child: AnimatedBuilder(
+                  animation: _progressAnimation,
+                  builder: (context, child) {
+                    return FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: _progressAnimation.value,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF005AC2),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              // Footer: "SECURE ENTERPRISE PLATFORM" with Shield Icon
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.shield_outlined,
+                    size: 14,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'SECURE ENTERPRISE PLATFORM',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
             ],
           ),
         ),

@@ -6,6 +6,7 @@ import '../../features/onboarding/presentation/select_language_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/otp_verification_screen.dart';
+import '../../features/home/presentation/home_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -25,5 +26,6 @@ class AppRoutes {
         login: (context) => const LoginScreen(),
         register: (context) => const RegisterScreen(),
         otpVerification: (context) => const OtpVerificationScreen(),
+        home: (context) => const HomeScreen(),
       };
 }

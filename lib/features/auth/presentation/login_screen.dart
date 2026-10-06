@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../core/constants/app_assets.dart';
+import '../../../core/constants/country_data.dart';
 import '../../../core/routes/app_routes.dart';
-import '../../../core/widgets/custom_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,91 +12,143 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  
-  bool _obscurePassword = true;
   bool _rememberMe = true;
-  String _selectedFlag = '🇱🇰';
-  String _selectedDialCode = '+94';
-
-  final List<Map<String, String>> _countryCodes = [
-    {'name': 'Sri Lanka', 'code': '+94', 'flag': '🇱🇰'},
-    {'name': 'United States', 'code': '+1', 'flag': '🇺🇸'},
-    {'name': 'United Kingdom', 'code': '+44', 'flag': '🇬🇧'},
-    {'name': 'Canada', 'code': '+1', 'flag': '🇨🇦'},
-    {'name': 'United Arab Emirates', 'code': '+971', 'flag': '🇦🇪'},
-    {'name': 'Saudi Arabia', 'code': '+966', 'flag': '🇸🇦'},
-    {'name': 'Qatar', 'code': '+974', 'flag': '🇶🇦'},
-    {'name': 'India', 'code': '+91', 'flag': '🇮🇳'},
-    {'name': 'Australia', 'code': '+61', 'flag': '🇦🇺'},
-    {'name': 'Singapore', 'code': '+65', 'flag': '🇸🇬'},
-  ];
+  late CountryModel _selectedCountry;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    // Default to the country selected in Onboarding or Register
+    _selectedCountry = CountryData.selectedCountry;
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     _phoneController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
   void _showCountryCodePicker() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Select Country Code',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-                ),
-                const SizedBox(height: 14),
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: _countryCodes.length,
-                    separatorBuilder: (_, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                    itemBuilder: (context, index) {
-                      final c = _countryCodes[index];
-                      return ListTile(
-                        leading: Text(c['flag']!, style: const TextStyle(fontSize: 22)),
-                        title: Text(c['name']!, style: const TextStyle(fontWeight: FontWeight.w500)),
-                        trailing: Text(c['code']!, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF005AC2))),
-                        onTap: () {
-                          setState(() {
-                            _selectedFlag = c['flag']!;
-                            _selectedDialCode = c['code']!;
-                          });
-                          Navigator.pop(context);
-                        },
-                      );
-                    },
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * 0.55,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFCBD5E1),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Select Country Code',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: CountryData.allCountries.length,
+                      separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                      itemBuilder: (context, index) {
+                        final c = CountryData.allCountries[index];
+                        final isSelected = _selectedCountry.code == c.code && _selectedCountry.name == c.name;
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          leading: Text(c.flag, style: const TextStyle(fontSize: 24)),
+                          title: Text(
+                            c.name,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected ? const Color(0xFF005AC2) : const Color(0xFF1E293B),
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${c.digits} digits',
+                                style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                c.code,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected ? const Color(0xFF005AC2) : const Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                          onTap: () {
+                            setState(() {
+                              _selectedCountry = c;
+                              CountryData.selectedCountry = c;
+                              if (_phoneController.text.length > c.digits) {
+                                _phoneController.text = _phoneController.text.substring(0, c.digits);
+                              }
+                            });
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
       },
     );
+  }
+
+  void _handleLogin() {
+    final phone = _phoneController.text.trim();
+    if (phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter your ${_selectedCountry.name} phone number')),
+      );
+      return;
+    }
+
+    // Exact digit length validation (cannot be less or more)
+    if (phone.length != _selectedCountry.digits) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${_selectedCountry.name} phone number must be exactly ${_selectedCountry.digits} digits! (You entered ${phone.length})',
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    Navigator.pushNamed(context, AppRoutes.otpVerification);
   }
 
   @override
@@ -112,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -122,8 +175,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   tag: 'app_logo',
                   child: Image.asset(
                     AppAssets.logo,
-                    width: 120,
-                    height: 120,
+                    width: 110,
+                    height: 110,
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -139,206 +192,151 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   color: Color(0xFF1E293B),
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               const Text(
-                'Sign in to access your bookings & verified experts',
+                'Enter your phone number to sign in and receive an OTP verification code.',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 14,
                   color: Color(0xFF64748B),
+                  height: 1.4,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 28),
 
-              // Advanced Tab Bar: Phone OTP / Email & Password
-              Container(
-                height: 46,
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  labelColor: const Color(0xFF005AC2),
-                  unselectedLabelColor: const Color(0xFF64748B),
-                  labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
-                  dividerColor: Colors.transparent,
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  tabs: const [
-                    Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Iconsax.mobile, size: 16),
-                          SizedBox(width: 6),
-                          Text('Phone OTP'),
-                        ],
-                      ),
-                    ),
-                    Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Iconsax.sms, size: 16),
-                          SizedBox(width: 6),
-                          Text('Email & Pass'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Tab View Content
-              SizedBox(
-                height: 190,
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    // Tab 1: Phone Login
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Phone Number',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Country Picker Button
-                            InkWell(
-                              onTap: _showCountryCodePicker,
-                              borderRadius: BorderRadius.circular(14),
-                              child: Container(
-                                height: 52,
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF8FAFC),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Text(_selectedFlag, style: const TextStyle(fontSize: 18)),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      _selectedDialCode,
-                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-                                    ),
-                                    const Icon(Icons.arrow_drop_down, color: Color(0xFF64748B)),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: CustomTextField(
-                                controller: _phoneController,
-                                hintText: '77 123 4567',
-                                keyboardType: TextInputType.phone,
-                                prefixIcon: const Icon(Iconsax.call, color: Color(0xFF94A3B8), size: 20),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'We will send a 5-digit verification code to this number.',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
-                        ),
-                      ],
-                    ),
-
-                    // Tab 2: Email & Password Login
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CustomTextField(
-                          controller: _emailController,
-                          labelText: 'Email Address',
-                          hintText: 'alex@example.com',
-                          keyboardType: TextInputType.emailAddress,
-                          prefixIcon: const Icon(Iconsax.sms, color: Color(0xFF94A3B8), size: 20),
-                        ),
-                        const SizedBox(height: 12),
-                        CustomTextField(
-                          controller: _passwordController,
-                          labelText: 'Password',
-                          hintText: '••••••••',
-                          obscureText: _obscurePassword,
-                          prefixIcon: const Icon(Iconsax.lock, color: Color(0xFF94A3B8), size: 20),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                              color: const Color(0xFF94A3B8),
-                              size: 20,
-                            ),
-                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Remember Me & Forgot Password
+              // Phone Number Label
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: Checkbox(
-                          value: _rememberMe,
-                          activeColor: const Color(0xFF005AC2),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                          onChanged: (val) => setState(() => _rememberMe = val ?? true),
+                  const Text(
+                    'Phone Number',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  Text(
+                    'Exact ${_selectedCountry.digits} digits',
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF005AC2), fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // Country Code Card and Phone Number Input Box
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Separate Country Code Card
+                  InkWell(
+                    onTap: _showCountryCodePicker,
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      height: 52,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(_selectedCountry.flag, style: const TextStyle(fontSize: 20)),
+                          const SizedBox(width: 6),
+                          Text(
+                            _selectedCountry.code,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Color(0xFF64748B)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Separate Phone Input Box with strict digits only and length limiter
+                  Expanded(
+                    child: Container(
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: TextField(
+                        controller: _phoneController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(_selectedCountry.digits),
+                        ],
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF1E293B),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: _selectedCountry.hint,
+                          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                          prefixIcon: const Icon(Iconsax.call, color: Color(0xFF94A3B8), size: 20),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Remember me',
-                        style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-                      ),
-                    ],
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text(
-                      'Forgot password?',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF005AC2)),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
 
-              // Login Button
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.shield_outlined, color: Color(0xFF005AC2), size: 16),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'We will send a 5-digit OTP to your ${_selectedCountry.name} mobile number.',
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), height: 1.3),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Remember Me Checkbox
+              Row(
+                children: [
+                  SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: Checkbox(
+                      value: _rememberMe,
+                      activeColor: const Color(0xFF005AC2),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      onChanged: (val) => setState(() => _rememberMe = val ?? true),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Remember me on this device',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // "Send OTP" / "Continue" Button
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, AppRoutes.otpVerification);
-                  },
+                  onPressed: _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0047AB),
                     foregroundColor: Colors.white,
@@ -351,10 +349,17 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  child: const Text('Login'),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Send Verification Code'),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward_rounded, size: 18),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
               // Divider "Or continue with"
               const Row(
@@ -374,7 +379,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   Expanded(child: Divider(color: Color(0xFFE2E8F0))),
                 ],
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
 
               // Social Logins (Google & Facebook)
               Row(
@@ -454,7 +459,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
 
               // "Don't have an account? Register"
               Row(

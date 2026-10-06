@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/services/session_manager.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   const OtpVerificationScreen({super.key});
@@ -155,9 +156,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Navigate to Home screen
-                    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) => false);
+                  onPressed: () async {
+                    // Save login session
+                    await SessionManager.saveUserSession(phone: '+94 77 123 4567');
+                    if (context.mounted) {
+                      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) => false);
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0047AB),
