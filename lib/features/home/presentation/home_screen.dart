@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../core/constants/app_assets.dart';
 import '../../../core/constants/country_data.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/services/session_manager.dart';
+import 'all_categories_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,82 +19,130 @@ class _HomeScreenState extends State<HomeScreen> {
   String _userName = 'Alex';
   String _userCity = 'Colombo';
 
+  // Hero Banner Carousel
+  final PageController _bannerController = PageController();
+  int _currentBannerIndex = 0;
+  Timer? _bannerTimer;
+
+  final List<Map<String, dynamic>> _bannerSlides = [
+    {
+      'title': 'Trusted\nWorkers Near\nYou',
+      'tagline': '20% OFF FIRST BOOKING',
+      'buttonText': 'Book now',
+      'image': AppAssets.workerBanner,
+      'gradient': const [Color(0xFF0047AB), Color(0xFF005AC2)],
+    },
+    {
+      'title': 'Emergency\n24/7 Rapid\nService',
+      'tagline': '30 MIN ARRIVAL PROMISE',
+      'buttonText': 'Find Now',
+      'image': AppAssets.onboardingHero,
+      'gradient': const [Color(0xFF0F766E), Color(0xFF0D9488)],
+    },
+    {
+      'title': 'Certified\nQuality &\nWarranty',
+      'tagline': '100% VERIFIED PROS',
+      'buttonText': 'Explore',
+      'image': AppAssets.servicePainting,
+      'gradient': const [Color(0xFF4338CA), Color(0xFF6366F1)],
+    },
+  ];
+
   final List<Map<String, dynamic>> _categories = [
     {
+      'id': 'electrician',
       'title': 'Electrician',
       'icon': Icons.bolt_rounded,
       'color': const Color(0xFFD97706),
       'bgColor': const Color(0xFFFEF3C7),
+      'badge': 'HOT',
     },
     {
+      'id': 'plumber',
       'title': 'Plumber',
       'icon': Icons.plumbing_rounded,
       'color': const Color(0xFF0284C7),
       'bgColor': const Color(0xFFE0F2FE),
+      'badge': null,
     },
     {
+      'id': 'carpenter',
       'title': 'Carpenter',
       'icon': Icons.carpenter_rounded,
       'color': const Color(0xFF92400E),
       'bgColor': const Color(0xFFFEF3C7),
+      'badge': null,
     },
     {
+      'id': 'painter',
       'title': 'Painter',
       'icon': Icons.format_paint_rounded,
       'color': const Color(0xFFDB2777),
       'bgColor': const Color(0xFFFCE7F3),
+      'badge': 'OFFER',
     },
     {
+      'id': 'ac_repair',
       'title': 'AC Repair',
       'icon': Icons.ac_unit_rounded,
       'color': const Color(0xFF0891B2),
       'bgColor': const Color(0xFFE0F2FE),
+      'badge': 'TOP',
     },
     {
+      'id': 'mason',
       'title': 'Mason',
       'icon': Icons.foundation_rounded,
       'color': const Color(0xFFEA580C),
       'bgColor': const Color(0xFFFFEDD5),
+      'badge': null,
     },
     {
+      'id': 'welder',
       'title': 'Welder',
       'icon': Icons.hardware_rounded,
       'color': const Color(0xFF4F46E5),
       'bgColor': const Color(0xFFEEF2FF),
+      'badge': null,
     },
     {
+      'id': 'more',
       'title': 'More',
-      'icon': Icons.more_horiz_rounded,
-      'color': const Color(0xFF475569),
-      'bgColor': const Color(0xFFF1F5F9),
+      'icon': Icons.grid_view_rounded,
+      'color': const Color(0xFF005AC2),
+      'bgColor': const Color(0xFFEFF6FF),
+      'badge': null,
     },
   ];
 
   final List<Map<String, dynamic>> _popularServices = [
     {
-      'name': 'Home Painting',
-      'category': 'Wall & Ceiling Painting',
+      'name': 'Home Wall Painting',
+      'category': 'Painter • Premium Emulsion',
       'rating': '4.9',
-      'reviews': '124',
+      'reviews': '142',
       'price': 'Rs. 2,500 / hr',
+      'tag': 'Best Seller',
       'image': AppAssets.servicePainting,
       'isFavorite': true,
     },
     {
-      'name': 'AC Deep Servicing',
-      'category': 'Filter Cleaning & Gas Refill',
-      'rating': '4.8',
-      'reviews': '98',
-      'price': 'Rs. 3,500 / unit',
+      'name': 'AC Deep Jet Servicing',
+      'category': 'AC Repair • Anti-Bacterial Wash',
+      'rating': '5.0',
+      'reviews': '198',
+      'price': 'Rs. 3,200 / unit',
+      'tag': 'High Demand',
       'image': AppAssets.onboardingHero,
       'isFavorite': false,
     },
     {
-      'name': 'Pipe & Tap Leak Repair',
-      'category': 'Bathroom & Kitchen Plumbing',
-      'rating': '5.0',
+      'name': 'Emergency Pipe & Tap Fix',
+      'category': 'Plumber • Fast Arrival',
+      'rating': '4.9',
       'reviews': '210',
-      'price': 'Rs. 1,800 / hr',
+      'price': 'Rs. 1,500 / hr',
+      'tag': 'Instant 30m',
       'image': AppAssets.workerBanner,
       'isFavorite': false,
     },
@@ -102,6 +152,28 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadUser();
+    _startBannerAutoScroll();
+  }
+
+  void _startBannerAutoScroll() {
+    _bannerTimer?.cancel();
+    _bannerTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (_bannerController.hasClients) {
+        final nextPage = (_currentBannerIndex + 1) % _bannerSlides.length;
+        _bannerController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _bannerTimer?.cancel();
+    _bannerController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadUser() async {
@@ -113,6 +185,108 @@ class _HomeScreenState extends State<HomeScreen> {
         _userCity = CountryData.selectedCountry.cities.first;
       });
     }
+  }
+
+  // Interactive City Selector Bottom Sheet
+  void _showCityPicker() {
+    final cities = CountryData.selectedCountry.cities;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E8F0),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Select Your City',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  Text(
+                    '🇱🇰 ${CountryData.selectedCountry.name}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF005AC2),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.45),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: cities.length,
+                  separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  itemBuilder: (context, index) {
+                    final city = cities[index];
+                    final isSelected = city == _userCity;
+
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.location_on_rounded,
+                          color: isSelected ? const Color(0xFF005AC2) : const Color(0xFF94A3B8),
+                          size: 20,
+                        ),
+                      ),
+                      title: Text(
+                        city,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                          color: isSelected ? const Color(0xFF005AC2) : const Color(0xFF1E293B),
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? const Icon(Icons.check_circle_rounded, color: Color(0xFF005AC2), size: 22)
+                          : null,
+                      onTap: () {
+                        setState(() => _userCity = city);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   // Cross-Device Security Verification Alert Dialog
@@ -212,6 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SnackBar(
                               content: Text('Login request denied ❌'),
                               backgroundColor: Color(0xFFDC2626),
+                              behavior: SnackBarBehavior.floating,
                             ),
                           );
                         },
@@ -252,14 +427,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _approveAndLogout() async {
     await SessionManager.logout();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Login approved on new device. Logged out from this device.'),
-        backgroundColor: Color(0xFF005AC2),
-      ),
-    );
-    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (route) => false);
+    if (mounted) {
+      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (route) => false);
+    }
   }
 
   Widget _buildSecurityRow(IconData icon, String label, String value) {
@@ -267,18 +437,22 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Icon(icon, size: 16, color: const Color(0xFF64748B)),
         const SizedBox(width: 8),
-        Text('$label: ', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w500)),
+        Text(
+          '$label: ',
+          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+        ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF1E293B), fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
     );
   }
 
-  // Logout handler
+  // Logout Handler
   Future<void> _handleLogout() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -294,8 +468,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
+              backgroundColor: const Color(0xFFEF4444),
               foregroundColor: Colors.white,
+              elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             child: const Text('Logout'),
@@ -315,14 +490,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Top Header: "Good morning, Alex 👋" + Location + Notification Bell
+              // 1. Ultra-Modern Header: User Profile Greeting + Interactive City Pill + Notification Bell
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -336,8 +511,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF1E293B),
-                              letterSpacing: -0.3,
+                              color: Color(0xFF0F172A),
+                              letterSpacing: -0.4,
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -345,26 +520,35 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                       const SizedBox(height: 3),
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on_outlined, color: Color(0xFF005AC2), size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$_userCity, ${CountryData.selectedCountry.name}',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF64748B),
-                              fontWeight: FontWeight.w500,
-                            ),
+
+                      // Interactive City Selector Pill
+                      InkWell(
+                        onTap: _showCityPicker,
+                        borderRadius: BorderRadius.circular(10),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.location_on_outlined, color: Color(0xFF005AC2), size: 16),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$_userCity, ${CountryData.selectedCountry.name}',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF005AC2),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF005AC2), size: 18),
+                            ],
                           ),
-                          const SizedBox(width: 2),
-                          const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B), size: 18),
-                        ],
+                        ),
                       ),
                     ],
                   ),
 
-                  // Notification Bell Squircle Button
+                  // Notification Bell Button
                   InkWell(
                     onTap: _showCrossDeviceSecurityDialog,
                     borderRadius: BorderRadius.circular(16),
@@ -372,14 +556,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          const Icon(Icons.notifications_none_rounded, color: Color(0xFF1E293B), size: 24),
+                          const Icon(Icons.notifications_none_rounded, color: Color(0xFF0F172A), size: 24),
                           Positioned(
                             top: 13,
                             right: 14,
@@ -400,45 +591,69 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 18),
 
-              // 2. Search & Filter Bar
+              // 2. Search & Filter Bar (Clickable directly into All Categories)
               Row(
                 children: [
-                  // Search Input Field
                   Expanded(
-                    child: Container(
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      child: const TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Search for services...',
-                          hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                          prefixIcon: Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 22),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 14),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.allCategories);
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.03),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          children: [
+                            SizedBox(width: 14),
+                            Icon(Icons.search_rounded, color: Color(0xFF005AC2), size: 22),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Search electrician, plumber, AC...',
+                                style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
 
-                  // Separate Filter Sliders Button
+                  // Filter Button
                   InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.allCategories);
+                    },
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
+                        color: const Color(0xFF005AC2),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF005AC2).withValues(alpha: 0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
                       child: const Center(
-                        child: Icon(Icons.tune_rounded, color: Color(0xFF1E293B), size: 22),
+                        child: Icon(Icons.tune_rounded, color: Colors.white, size: 22),
                       ),
                     ),
                   ),
@@ -446,124 +661,193 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 20),
 
-              // 3. Hero Promo Banner: "Trusted Workers Near You" + 3D Handyman Asset
-              Container(
-                width: double.infinity,
-                height: 165,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0047AB), Color(0xFF005AC2)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0047AB).withValues(alpha: 0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: Stack(
-                    children: [
-                      // Background Graphic Circles
-                      Positioned(
-                        right: -30,
-                        top: -30,
-                        child: Container(
-                          width: 180,
-                          height: 180,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.06),
+              // 3. Swipeable Carousel Hero Banner
+              SizedBox(
+                height: 175,
+                child: PageView.builder(
+                  controller: _bannerController,
+                  itemCount: _bannerSlides.length,
+                  onPageChanged: (idx) => setState(() => _currentBannerIndex = idx),
+                  itemBuilder: (context, index) {
+                    final slide = _bannerSlides[index];
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: slide['gradient'] as List<Color>,
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (slide['gradient'] as List<Color>).first.withValues(alpha: 0.3),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
                           ),
-                        ),
+                        ],
                       ),
-
-                      // Worker Image on Right
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        bottom: 0,
-                        width: 155,
-                        child: Image.asset(
-                          AppAssets.workerBanner,
-                          fit: BoxFit.cover,
-                          alignment: Alignment.topCenter,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Center(
-                              child: Icon(Icons.handyman_rounded, color: Colors.white70, size: 70),
-                            );
-                          },
-                        ),
-                      ),
-
-                      // Text and "Book now ->" button on Left
-                      Positioned(
-                        left: 20,
-                        top: 20,
-                        bottom: 20,
-                        right: 150,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: Stack(
                           children: [
-                            const Text(
-                              'Trusted\nWorkers Near\nYou',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                height: 1.2,
-                                letterSpacing: -0.3,
+                            // Background Ambient Circles
+                            Positioned(
+                              right: -30,
+                              top: -30,
+                              child: Container(
+                                width: 170,
+                                height: 170,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                ),
                               ),
                             ),
-                            InkWell(
-                              onTap: () {},
-                              borderRadius: BorderRadius.circular(24),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.1),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
+
+                            // Worker Image
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              bottom: 0,
+                              width: 155,
+                              child: Image.asset(
+                                slide['image'] as String,
+                                fit: BoxFit.cover,
+                                alignment: Alignment.topCenter,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Center(
+                                    child: Icon(Icons.handyman_rounded, color: Colors.white70, size: 70),
+                                  );
+                                },
+                              ),
+                            ),
+
+                            // Text & Button Content
+                            Positioned(
+                              left: 20,
+                              top: 18,
+                              bottom: 18,
+                              right: 145,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                  ],
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'Book now',
-                                      style: TextStyle(
-                                        color: Color(0xFF0047AB),
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
+                                    child: Text(
+                                      slide['tagline'] as String,
+                                      style: const TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                        letterSpacing: 0.4,
                                       ),
                                     ),
-                                    SizedBox(width: 4),
-                                    Icon(Icons.arrow_forward_rounded, color: Color(0xFF0047AB), size: 15),
-                                  ],
-                                ),
+                                  ),
+                                  Text(
+                                    slide['title'] as String,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      height: 1.18,
+                                      letterSpacing: -0.3,
+                                    ),
+                                  ),
+                                  InkWell(
+                                    onTap: () {
+                                      Navigator.pushNamed(context, AppRoutes.allCategories);
+                                    },
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            slide['buttonText'] as String,
+                                            style: const TextStyle(
+                                              color: Color(0xFF0047AB),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          const Icon(Icons.arrow_forward_rounded, color: Color(0xFF0047AB), size: 14),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 10),
 
-              // 4. Categories Section Header: "Categories" + "View All"
+              // Banner Indicator Dots
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(_bannerSlides.length, (idx) {
+                    final isSelected = idx == _currentBannerIndex;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: isSelected ? 20 : 6,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: isSelected ? const Color(0xFF005AC2) : const Color(0xFFCBD5E1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // 4. Quality Shield Strip (Apple/Urban Company Standard)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0FDF4),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFBBF7D0)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.verified_user_rounded, color: Color(0xFF16A34A), size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '100% Background-Checked Pros • Fixed Upfront Prices • 7-Day Warranty',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF166534),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // 5. Categories Section Header: "Categories" + "View All"
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -572,17 +856,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E293B),
+                      color: Color(0xFF0F172A),
                     ),
                   ),
                   InkWell(
-                    onTap: () {},
-                    child: const Text(
-                      'View All',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF005AC2),
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.allCategories);
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      child: Row(
+                        children: [
+                          Text(
+                            'View All',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF005AC2),
+                            ),
+                          ),
+                          SizedBox(width: 2),
+                          Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF005AC2), size: 12),
+                        ],
                       ),
                     ),
                   ),
@@ -590,7 +886,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 14),
 
-              // Categories Grid (2 Rows x 4 Columns)
+              // 8 Categories Grid with Micro Badges & Glow
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -599,53 +895,115 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisCount: 4,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 14,
-                  childAspectRatio: 0.82,
+                  childAspectRatio: 0.80,
                 ),
                 itemBuilder: (context, index) {
                   final cat = _categories[index];
-                  return Column(
-                    children: [
-                      Container(
-                        width: 58,
-                        height: 58,
-                        decoration: BoxDecoration(
-                          color: cat['bgColor'] as Color,
-                          borderRadius: BorderRadius.circular(18),
+                  final badge = cat['badge'] as String?;
+
+                  return InkWell(
+                    onTap: () {
+                      final id = cat['id'] as String;
+                      final initialId = id == 'more' ? 'electrician' : id;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AllCategoriesScreen(initialCategoryId: initialId),
                         ),
-                        child: Center(
-                          child: Icon(
-                            cat['icon'] as IconData,
-                            color: cat['color'] as Color,
-                            size: 26,
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(18),
+                    child: Column(
+                      children: [
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 58,
+                              height: 58,
+                              decoration: BoxDecoration(
+                                color: cat['bgColor'] as Color,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: (cat['color'] as Color).withValues(alpha: 0.2),
+                                ),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  cat['icon'] as IconData,
+                                  color: cat['color'] as Color,
+                                  size: 26,
+                                ),
+                              ),
+                            ),
+                            if (badge != null)
+                              Positioned(
+                                top: -4,
+                                right: -4,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEF4444),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.white, width: 1.5),
+                                  ),
+                                  child: Text(
+                                    badge,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          cat['title'] as String,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF334155),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        cat['title'] as String,
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF334155),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   );
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 22),
 
-              // 5. Popular Services Header: "Popular Services"
-              const Text(
-                'Popular Services',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
-                ),
+              // 6. Popular Services Header: "Popular Services" + "Explore"
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Popular Services',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.allCategories);
+                    },
+                    child: const Text(
+                      'Explore',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF005AC2),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 14),
 
@@ -662,101 +1020,127 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFF1F5F9)),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 12,
-                          offset: const Offset(0, 3),
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    child: Row(
-                      children: [
-                        // Service Thumbnail Image
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: Container(
-                            width: 76,
-                            height: 76,
-                            color: const Color(0xFFF1F5F9),
-                            child: Image.asset(
-                              service['image'] as String,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Center(
-                                  child: Icon(Icons.handyman_rounded, color: Color(0xFF94A3B8), size: 32),
-                                );
-                              },
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.allCategories);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Row(
+                        children: [
+                          // Service Thumbnail Image
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              color: const Color(0xFFF1F5F9),
+                              child: Image.asset(
+                                service['image'] as String,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Center(
+                                    child: Icon(Icons.handyman_rounded, color: Color(0xFF94A3B8), size: 32),
+                                  );
+                                },
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 14),
+                          const SizedBox(width: 14),
 
-                        // Service Details
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                service['name'] as String,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1E293B),
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                service['category'] as String,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF64748B),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 16),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${service['rating']} (${service['reviews']})',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1E293B),
+                          // Service Details
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (service['tag'] != null) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFEFF6FF),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      service['tag'] as String,
+                                      style: const TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF005AC2),
+                                      ),
                                     ),
                                   ),
-                                  const Spacer(),
-                                  Text(
-                                    service['price'] as String,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF005AC2),
-                                    ),
-                                  ),
+                                  const SizedBox(height: 3),
                                 ],
-                              ),
-                            ],
+                                Text(
+                                  service['name'] as String,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  service['category'] as String,
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 15),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      '${service['rating']} (${service['reviews']})',
+                                      style: const TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      service['price'] as String,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF005AC2),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
+                          const SizedBox(width: 6),
 
-                        // Favorite Heart Icon
-                        IconButton(
-                          icon: Icon(
-                            service['isFavorite'] == true ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                            color: service['isFavorite'] == true ? const Color(0xFFEF4444) : const Color(0xFFCBD5E1),
-                            size: 22,
+                          // Favorite Heart Icon
+                          IconButton(
+                            icon: Icon(
+                              service['isFavorite'] == true ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                              color: service['isFavorite'] == true ? const Color(0xFFEF4444) : const Color(0xFFCBD5E1),
+                              size: 22,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                service['isFavorite'] = !(service['isFavorite'] as bool);
+                              });
+                            },
                           ),
-                          onPressed: () {
-                            setState(() {
-                              service['isFavorite'] = !(service['isFavorite'] as bool);
-                            });
-                          },
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -767,13 +1151,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
-      // 6. Bottom Navigation Bar (Home, Bookings, Chat, Profile)
+      // 7. Sleek Bottom Navigation Bar (Home, Bookings, Chat, Profile)
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 16,
               offset: const Offset(0, -4),
             ),
