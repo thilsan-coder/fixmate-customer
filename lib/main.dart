@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/confirm_booking_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -9,16 +10,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
+      title: 'FixMate',
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: Center(
-          child: Text(
-            'FixMate Customer App',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-        ),
+      theme: ThemeData(
+        scaffoldBackgroundColor: const Color(0xFFF7F9FC),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0047AB)),
+        useMaterial3: true,
       ),
+      home: const ConfirmBookingScreen(),
     );
   }
 }
