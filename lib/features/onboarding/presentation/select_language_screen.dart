@@ -290,7 +290,7 @@ class _SelectLanguageScreenState extends State<SelectLanguageScreen> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, AppRoutes.login);
+                    Navigator.pushNamed(context, AppRoutes.register);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0047AB),

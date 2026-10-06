@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_assets.dart';
+import '../../../core/constants/country_data.dart';
 import '../../../core/routes/app_routes.dart';
 
 class SelectCountryScreen extends StatefulWidget {
@@ -10,34 +11,20 @@ class SelectCountryScreen extends StatefulWidget {
 }
 
 class _SelectCountryScreenState extends State<SelectCountryScreen> {
-  String _selectedCountry = 'United States';
+  late CountryModel _selectedCountry;
   String _searchQuery = '';
 
-  final List<Map<String, String>> _allCountries = [
-    {'name': 'United States', 'code': '+1', 'flag': '🇺🇸'},
-    {'name': 'United Kingdom', 'code': '+44', 'flag': '🇬🇧'},
-    {'name': 'Canada', 'code': '+1', 'flag': '🇨🇦'},
-    {'name': 'Germany', 'code': '+49', 'flag': '🇩🇪'},
-    {'name': 'France', 'code': '+33', 'flag': '🇫🇷'},
-    {'name': 'Sri Lanka', 'code': '+94', 'flag': '🇱🇰'},
-    {'name': 'Australia', 'code': '+61', 'flag': '🇦🇺'},
-    {'name': 'India', 'code': '+91', 'flag': '🇮🇳'},
-    {'name': 'United Arab Emirates', 'code': '+971', 'flag': '🇦🇪'},
-    {'name': 'Saudi Arabia', 'code': '+966', 'flag': '🇸🇦'},
-    {'name': 'Qatar', 'code': '+974', 'flag': '🇶🇦'},
-    {'name': 'Singapore', 'code': '+65', 'flag': '🇸🇬'},
-    {'name': 'Malaysia', 'code': '+60', 'flag': '🇲🇾'},
-    {'name': 'Japan', 'code': '+81', 'flag': '🇯🇵'},
-    {'name': 'Italy', 'code': '+39', 'flag': '🇮🇹'},
-    {'name': 'Spain', 'code': '+34', 'flag': '🇪🇸'},
-    {'name': 'South Africa', 'code': '+27', 'flag': '🇿🇦'},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _selectedCountry = CountryData.selectedCountry;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filteredCountries = _allCountries.where((c) {
-      final name = c['name']!.toLowerCase();
-      final code = c['code']!.toLowerCase();
+    final filteredCountries = CountryData.allCountries.where((c) {
+      final name = c.name.toLowerCase();
+      final code = c.code.toLowerCase();
       return name.contains(_searchQuery.toLowerCase()) || code.contains(_searchQuery.toLowerCase());
     }).toList();
 
@@ -131,14 +118,17 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
               Expanded(
                 child: ListView.separated(
                   itemCount: filteredCountries.length,
-                  separatorBuilder: (_, index) => const SizedBox(height: 10),
+                  separatorBuilder: (context, index) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final item = filteredCountries[index];
-                    final isSelected = _selectedCountry == item['name'];
+                    final isSelected = _selectedCountry.name == item.name;
 
                     return InkWell(
                       onTap: () {
-                        setState(() => _selectedCountry = item['name']!);
+                        setState(() {
+                          _selectedCountry = item;
+                          CountryData.selectedCountry = item;
+                        });
                       },
                       borderRadius: BorderRadius.circular(14),
                       child: Container(
@@ -166,14 +156,14 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
                                   ),
                                 ],
                               ),
-                              child: Text(item['flag']!, style: const TextStyle(fontSize: 22)),
+                              child: Text(item.flag, style: const TextStyle(fontSize: 22)),
                             ),
                             const SizedBox(width: 14),
 
                             // Country Name
                             Expanded(
                               child: Text(
-                                item['name']!,
+                                item.name,
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
@@ -181,6 +171,17 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
                                 ),
                               ),
                             ),
+
+                            // Dial Code badge
+                            Text(
+                              item.code,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected ? const Color(0xFF005AC2) : const Color(0xFF64748B),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
 
                             // Radio Check Icon
                             if (isSelected)
@@ -218,6 +219,7 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
+                    CountryData.selectedCountry = _selectedCountry;
                     Navigator.pushNamed(context, AppRoutes.selectLanguage);
                   },
                   style: ElevatedButton.styleFrom(
