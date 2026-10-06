@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme/app_colors.dart';
+import 'payment_screen.dart';
 
 class ConfirmBookingScreen extends StatelessWidget {
   const ConfirmBookingScreen({super.key});
@@ -380,7 +381,12 @@ class ConfirmBookingScreen extends StatelessWidget {
                 height: 56,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navigate to Screen 16: Payment Screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PaymentScreen(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
