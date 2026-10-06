@@ -39,6 +39,7 @@ dependencies:
   pinput: ^7.0.0
   flutter_rating_bar: ^4.0.1
   iconsax_flutter: ^1.0.1
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
