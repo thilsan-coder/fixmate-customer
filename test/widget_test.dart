@@ -3,7 +3,7 @@ import 'package:fixmate/main.dart';
 
 void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
-    expect(find.text('FixMate Customer App'), findsOneWidget);
+    await tester.pumpWidget(const FixMateApp());
+    expect(find.byType(FixMateApp), findsOneWidget);
   });
 }
