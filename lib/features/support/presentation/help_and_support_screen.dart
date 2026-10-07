@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_colors.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/routes/app_routes.dart';
 
 class HelpAndSupportScreen extends StatefulWidget {
   const HelpAndSupportScreen({super.key});
@@ -214,58 +215,63 @@ class _HelpAndSupportScreenState extends State<HelpAndSupportScreen> {
                 children: [
                   // Left Card: Live Chat
                   Expanded(
-                    child: Container(
-                      height: 155,
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                            blurRadius: 14,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.22),
-                              shape: BoxShape.circle,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.chat);
+                      },
+                      child: Container(
+                        height: 155,
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              blurRadius: 14,
+                              offset: const Offset(0, 6),
                             ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.chat_bubble_outline_rounded,
-                                color: Colors.white,
-                                size: 20,
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.22),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.chat_bubble_outline_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                               ),
                             ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            'Live Chat',
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
+                            const Spacer(),
+                            Text(
+                              'Live Chat',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Talk to an agent\nnow',
-                            style: GoogleFonts.inter(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              fontSize: 12,
-                              height: 1.25,
-                              fontWeight: FontWeight.w400,
+                            const SizedBox(height: 3),
+                            Text(
+                              'Talk to an agent\nnow',
+                              style: GoogleFonts.inter(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                fontSize: 12,
+                                height: 1.25,
+                                fontWeight: FontWeight.w400,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -273,53 +279,58 @@ class _HelpAndSupportScreenState extends State<HelpAndSupportScreen> {
 
                   // Right Card: Dispute
                   Expanded(
-                    child: Container(
-                      height: 155,
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE9F0FA),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: AppColors.borderLight.withValues(alpha: 0.6),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.bookingDetails);
+                      },
+                      child: Container(
+                        height: 155,
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE9F0FA),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: AppColors.borderLight.withValues(alpha: 0.6),
+                          ),
                         ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFBACFFB),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.warning_amber_rounded,
-                                color: AppColors.primary,
-                                size: 22,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFBACFFB),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.warning_amber_rounded,
+                                  color: AppColors.primary,
+                                  size: 22,
+                                ),
                               ),
                             ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            'Dispute',
-                            style: GoogleFonts.inter(
-                              color: AppColors.textPrimary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
+                            const Spacer(),
+                            Text(
+                              'Dispute',
+                              style: GoogleFonts.inter(
+                                color: AppColors.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'File a formal claim',
-                            style: GoogleFonts.inter(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
+                            const SizedBox(height: 3),
+                            Text(
+                              'File a formal claim',
+                              style: GoogleFonts.inter(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -499,6 +510,15 @@ class _HelpAndSupportScreenState extends State<HelpAndSupportScreen> {
         setState(() {
           _currentNavIndex = index;
         });
+        if (index == 0) {
+          Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) => false);
+        } else if (index == 1) {
+          Navigator.pushNamed(context, AppRoutes.confirmBooking);
+        } else if (index == 2) {
+          Navigator.pushNamed(context, AppRoutes.bookingDetails);
+        } else if (index == 3) {
+          Navigator.pushNamed(context, AppRoutes.editProfile);
+        }
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
