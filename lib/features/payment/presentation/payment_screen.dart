@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_colors.dart';
-import 'finding_workers_screen.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../booking/presentation/finding_workers_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});

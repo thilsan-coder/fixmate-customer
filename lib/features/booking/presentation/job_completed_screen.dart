@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_colors.dart';
-import 'invoice_screen.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../payment/presentation/invoice_screen.dart';
 
 class JobCompletedScreen extends StatefulWidget {
   const JobCompletedScreen({super.key});

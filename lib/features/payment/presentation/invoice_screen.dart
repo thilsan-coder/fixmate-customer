@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_colors.dart';
+import '../../../core/theme/app_colors.dart';
 import 'payment_history_screen.dart';
-import 'edit_profile_screen.dart';
+import '../../profile/presentation/edit_profile_screen.dart';
 
 class InvoiceScreen extends StatefulWidget {
   const InvoiceScreen({super.key});
@@ -509,7 +509,16 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
         setState(() {
           _currentNavIndex = index;
         });
-        if (index == 3) {
+        if (index == 0) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        } else if (index == 2) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const PaymentHistoryScreen(),
+            ),
+          );
+        } else if (index == 3) {
           Navigator.push(
             context,
             MaterialPageRoute(

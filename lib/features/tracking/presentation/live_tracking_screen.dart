@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_colors.dart';
-import 'chat_screen.dart';
-import 'booking_details_screen.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../chat/presentation/chat_screen.dart';
+import '../../booking/presentation/booking_details_screen.dart';
 
 class LiveTrackingScreen extends StatelessWidget {
   const LiveTrackingScreen({super.key});

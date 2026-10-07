@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_colors.dart';
-import 'payment_screen.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../payment/presentation/payment_screen.dart';
 
 class ConfirmBookingScreen extends StatelessWidget {
   const ConfirmBookingScreen({super.key});
