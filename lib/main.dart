@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
-import 'screens/confirm_booking_screen.dart';
+import 'package:flutter/services.dart';
+import 'core/theme/app_theme.dart';
+import 'core/routes/app_routes.dart';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
+  runApp(const FixMateApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class FixMateApp extends StatelessWidget {
+  const FixMateApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'FixMate',
+      title: 'FixMate Customer App',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFF7F9FC),
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0052CC)),
-        useMaterial3: true,
-      ),
-      home: const ConfirmBookingScreen(),
+      theme: AppTheme.lightTheme,
+      initialRoute: AppRoutes.splash,
+      routes: AppRoutes.routes,
     );
   }
 }
