@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_colors.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/routes/app_routes.dart';
 import 'job_completed_screen.dart';
 
 class BookingDetailsScreen extends StatefulWidget {
@@ -465,6 +466,13 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         setState(() {
           _currentNavIndex = index;
         });
+        if (index == 0) {
+          Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) => false);
+        } else if (index == 2) {
+          Navigator.pushNamed(context, AppRoutes.chat);
+        } else if (index == 3) {
+          Navigator.pushNamed(context, AppRoutes.editProfile);
+        }
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_colors.dart';
-import 'live_tracking_screen.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../tracking/presentation/live_tracking_screen.dart';
 
 class BookingConfirmedScreen extends StatelessWidget {
   const BookingConfirmedScreen({super.key});

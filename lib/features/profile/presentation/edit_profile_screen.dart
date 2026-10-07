@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_colors.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/routes/app_routes.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -62,7 +63,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               size: 24,
             ),
             onPressed: () {
-              // Navigate to Settings
+              Navigator.pushNamed(context, AppRoutes.helpAndSupport);
             },
           ),
           const SizedBox(width: 4),
@@ -533,6 +534,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         setState(() {
           _currentNavIndex = index;
         });
+        if (index == 0) {
+          Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) => false);
+        } else if (index == 1) {
+          Navigator.pushNamed(context, AppRoutes.bookingDetails);
+        } else if (index == 2) {
+          Navigator.pushNamed(context, AppRoutes.chat);
+        }
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
