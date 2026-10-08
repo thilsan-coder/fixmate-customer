@@ -737,10 +737,11 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                       ),
                       const SizedBox(height: 10),
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(22),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(
                             color: const Color(0xFF005AC2),
                             width: 1.5,
@@ -757,38 +758,42 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                         child: Row(
                           children: [
                             Container(
-                              width: 52,
-                              height: 52,
+                              width: 48,
+                              height: 48,
                               decoration: BoxDecoration(
                                 color: selectedService.color
                                     .withValues(alpha: 0.14),
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(14),
                               ),
                               child: Icon(
                                 selectedService.icon,
                                 color: selectedService.color,
-                                size: 28,
+                                size: 26,
                               ),
                             ),
-                            const SizedBox(width: 14),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
                                     children: [
-                                      Text(
-                                        selectedService.name,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w800,
-                                          color: const Color(0xFF0F172A),
+                                      Flexible(
+                                        child: Text(
+                                          selectedService.name,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 15.5,
+                                            fontWeight: FontWeight.w800,
+                                            color: const Color(0xFF0F172A),
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
+                                      const SizedBox(width: 6),
                                       Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 7, vertical: 2),
+                                            horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFFDCFCE7),
                                           borderRadius:
@@ -797,7 +802,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                                         child: Text(
                                           'SELECTED',
                                           style: GoogleFonts.inter(
-                                            fontSize: 9,
+                                            fontSize: 8.5,
                                             fontWeight: FontWeight.w800,
                                             color: const Color(0xFF16A34A),
                                           ),
@@ -809,7 +814,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                                   Text(
                                     selectedService.subtitle,
                                     style: GoogleFonts.inter(
-                                      fontSize: 12.5,
+                                      fontSize: 12,
                                       color: const Color(0xFF64748B),
                                     ),
                                     maxLines: 1,
@@ -818,12 +823,21 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                                 ],
                               ),
                             ),
-                            Text(
-                              'Est. ${selectedService.estPrice}',
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                color: const Color(0xFF005AC2),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'Est. ${selectedService.estPrice}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF005AC2),
+                                ),
                               ),
                             ),
                           ],
@@ -835,25 +849,30 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            '1. Select Service (${_services.length} Available)',
-                            style: GoogleFonts.inter(
-                              fontSize: 15.5,
-                              fontWeight: FontWeight.w800,
-                              color: const Color(0xFF0F172A),
+                          Flexible(
+                            child: Text(
+                              '1. Select Service (${_services.length} Available)',
+                              style: GoogleFonts.inter(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF0F172A),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: const Color(0xFFEFF6FF),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               'Est. ${selectedService.estPrice}',
                               style: GoogleFonts.inter(
-                                fontSize: 12,
+                                fontSize: 11.5,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFF005AC2),
                               ),
@@ -995,8 +1014,8 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFCBD5E1), width: 1.2),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.02),
@@ -1021,6 +1040,12 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                             color: const Color(0xFF94A3B8),
                           ),
                           border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          filled: false,
+                          fillColor: Colors.transparent,
                           isDense: true,
                           contentPadding: EdgeInsets.zero,
                         ),
@@ -1323,6 +1348,12 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                                       decoration: const InputDecoration(
                                         isDense: true,
                                         border: InputBorder.none,
+                                        enabledBorder: InputBorder.none,
+                                        focusedBorder: InputBorder.none,
+                                        errorBorder: InputBorder.none,
+                                        disabledBorder: InputBorder.none,
+                                        filled: false,
+                                        fillColor: Colors.transparent,
                                         contentPadding: EdgeInsets.zero,
                                       ),
                                     ),

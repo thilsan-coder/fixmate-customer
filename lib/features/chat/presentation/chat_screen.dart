@@ -366,7 +366,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                 // Quick Replies Chips
                 SizedBox(
-                  height: 38,
+                  height: 36,
                   child: ListView.separated(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     scrollDirection: Axis.horizontal,
@@ -375,13 +375,14 @@ class _ChatScreenState extends State<ChatScreen> {
                     separatorBuilder: (context, index) => const SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       final reply = _quickReplies[index];
-                      return GestureDetector(
+                      return InkWell(
                         onTap: () => _sendMessage(customText: reply),
+                        borderRadius: BorderRadius.circular(10),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.circular(10),
                             border: Border.all(color: const Color(0xFFCBD5E1)),
                           ),
                           child: Center(
@@ -401,9 +402,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 const SizedBox(height: 8),
 
-                // Bottom Message Input Bar
+                // Bottom Message Input Bar (Clean, single-layer modern input without nested circles/borders)
                 Container(
-                  padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     boxShadow: [
@@ -415,71 +416,99 @@ class _ChatScreenState extends State<ChatScreen> {
                     ],
                   ),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Plus Attachment Button
-                      IconButton(
-                        onPressed: () {
+                      // Plus / Attachment Button (Clean icon, no circular badge)
+                      InkWell(
+                        onTap: () {
                           setState(() {
                             _showAttachments = !_showAttachments;
                           });
                         },
-                        icon: Icon(
-                          _showAttachments ? Icons.close_rounded : Icons.add_circle_rounded,
-                          color: const Color(0xFF005AC2),
-                          size: 28,
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: _showAttachments
+                                ? const Color(0xFFEFF6FF)
+                                : const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: _showAttachments
+                                  ? const Color(0xFF005AC2)
+                                  : const Color(0xFFE2E8F0),
+                              width: 1.2,
+                            ),
+                          ),
+                          child: Icon(
+                            _showAttachments ? Icons.close_rounded : Icons.add_rounded,
+                            color: _showAttachments ? const Color(0xFF005AC2) : const Color(0xFF475569),
+                            size: 22,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 8),
 
-                      // Text Field
+                      // Text Field - Clean single container, NO inner duplicate borders/circles
                       Expanded(
                         child: Container(
-                          height: 46,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          height: 44,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(24),
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(10),
                             border: Border.all(
                               color: const Color(0xFFE2E8F0),
+                              width: 1.2,
                             ),
                           ),
-                          child: TextField(
-                            controller: _messageController,
-                            onSubmitted: (_) => _sendMessage(),
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: const Color(0xFF0F172A),
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Type a message...',
-                              hintStyle: GoogleFonts.inter(
-                                color: const Color(0xFF94A3B8),
+                          child: Center(
+                            child: TextField(
+                              controller: _messageController,
+                              onSubmitted: (_) => _sendMessage(),
+                              style: GoogleFonts.inter(
                                 fontSize: 14,
+                                color: const Color(0xFF0F172A),
                               ),
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: InputDecoration(
+                                hintText: 'Type a message...',
+                                hintStyle: GoogleFonts.inter(
+                                  color: const Color(0xFF94A3B8),
+                                  fontSize: 14,
+                                ),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                                filled: false,
+                                fillColor: Colors.transparent,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
 
-                      // Send Button
-                      GestureDetector(
+                      // Send Button - Modern clean button with 10px radius (No giant circle)
+                      InkWell(
                         onTap: () => _sendMessage(),
+                        borderRadius: BorderRadius.circular(10),
                         child: Container(
-                          width: 46,
-                          height: 46,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF005AC2),
-                            shape: BoxShape.circle,
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF005AC2),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Center(
                             child: Icon(
                               Icons.send_rounded,
                               color: Colors.white,
-                              size: 20,
+                              size: 19,
                             ),
                           ),
                         ),
