@@ -4,7 +4,23 @@ import '../../../core/theme/app_colors.dart';
 import '../../tracking/presentation/live_tracking_screen.dart';
 
 class BookingConfirmedScreen extends StatelessWidget {
-  const BookingConfirmedScreen({super.key});
+  final String workerName;
+  final String workerRole;
+  final String avatarUrl;
+  final String price;
+  final String serviceName;
+  final String? subServiceName;
+
+  const BookingConfirmedScreen({
+    super.key,
+    this.workerName = 'Nimal Perera',
+    this.workerRole = 'Plumber',
+    this.avatarUrl =
+        'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=80',
+    this.price = 'LKR 2,000',
+    this.serviceName = 'Plumbing',
+    this.subServiceName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +60,7 @@ class BookingConfirmedScreen extends StatelessWidget {
                               ),
                               child: ClipOval(
                                 child: Image.network(
-                                  'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=80',
+                                  avatarUrl,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) =>
                                       Container(
@@ -232,7 +248,7 @@ class BookingConfirmedScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      'General Home Repairs',
+                                      subServiceName ?? '$serviceName Service',
                                       style: GoogleFonts.inter(
                                         color: AppColors.textPrimary,
                                         fontSize: 14,
@@ -264,7 +280,11 @@ class BookingConfirmedScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const LiveTrackingScreen(),
+                            builder: (context) => LiveTrackingScreen(
+                              workerName: workerName,
+                              workerRole: workerRole,
+                              avatarUrl: avatarUrl,
+                            ),
                           ),
                         );
                       },

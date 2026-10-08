@@ -5,7 +5,23 @@ import '../../../core/theme/app_colors.dart';
 import 'booking_confirmed_screen.dart';
 
 class FindingWorkersScreen extends StatefulWidget {
-  const FindingWorkersScreen({super.key});
+  final String workerName;
+  final String workerRole;
+  final String avatarUrl;
+  final String price;
+  final String serviceName;
+  final String? subServiceName;
+
+  const FindingWorkersScreen({
+    super.key,
+    this.workerName = 'Nimal Perera',
+    this.workerRole = 'Plumber',
+    this.avatarUrl =
+        'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=80',
+    this.price = 'LKR 2,000',
+    this.serviceName = 'Plumbing',
+    this.subServiceName,
+  });
 
   @override
   State<FindingWorkersScreen> createState() => _FindingWorkersScreenState();
@@ -29,7 +45,14 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const BookingConfirmedScreen(),
+            builder: (context) => BookingConfirmedScreen(
+              workerName: widget.workerName,
+              workerRole: widget.workerRole,
+              avatarUrl: widget.avatarUrl,
+              price: widget.price,
+              serviceName: widget.serviceName,
+              subServiceName: widget.subServiceName,
+            ),
           ),
         );
       }

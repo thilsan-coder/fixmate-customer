@@ -4,7 +4,23 @@ import '../../../core/theme/app_colors.dart';
 import '../../booking/presentation/finding_workers_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
-  const PaymentScreen({super.key});
+  final String workerName;
+  final String workerRole;
+  final String avatarUrl;
+  final String price;
+  final String serviceName;
+  final String? subServiceName;
+
+  const PaymentScreen({
+    super.key,
+    this.workerName = 'Nimal Perera',
+    this.workerRole = 'Plumber',
+    this.avatarUrl =
+        'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&fit=crop&q=80',
+    this.price = 'LKR 2,000',
+    this.serviceName = 'Plumbing',
+    this.subServiceName,
+  });
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
@@ -83,7 +99,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                               height: 64,
                               color: AppColors.borderLight,
                               child: Image.network(
-                                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+                                widget.avatarUrl,
                                 width: 64,
                                 height: 64,
                                 fit: BoxFit.cover,
@@ -117,7 +133,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 ),
                                 const SizedBox(height: 3),
                                 Text(
-                                  'Plumbing Service',
+                                  widget.subServiceName ?? '${widget.serviceName} Service',
                                   style: GoogleFonts.inter(
                                     color: AppColors.textPrimary,
                                     fontSize: 16,
@@ -126,7 +142,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  'Arjun Perera',
+                                  widget.workerName,
                                   style: GoogleFonts.inter(
                                     color: AppColors.textSecondary,
                                     fontSize: 14,
@@ -514,7 +530,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const FindingWorkersScreen(),
+                            builder: (context) => FindingWorkersScreen(
+                              workerName: widget.workerName,
+                              workerRole: widget.workerRole,
+                              avatarUrl: widget.avatarUrl,
+                              price: widget.price,
+                              serviceName: widget.serviceName,
+                              subServiceName: widget.subServiceName,
+                            ),
                           ),
                         );
                       },

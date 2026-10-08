@@ -4,7 +4,29 @@ import '../../../core/theme/app_colors.dart';
 import '../../payment/presentation/payment_screen.dart';
 
 class ConfirmBookingScreen extends StatelessWidget {
-  const ConfirmBookingScreen({super.key});
+  final String workerName;
+  final String workerRole;
+  final String distance;
+  final double rating;
+  final int reviewsCount;
+  final String avatarUrl;
+  final String price;
+  final String serviceName;
+  final String? subServiceName;
+
+  const ConfirmBookingScreen({
+    super.key,
+    this.workerName = 'Nimal Perera',
+    this.workerRole = 'Plumber',
+    this.distance = '0.5 km away',
+    this.rating = 4.8,
+    this.reviewsCount = 120,
+    this.avatarUrl =
+        'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=80',
+    this.price = 'LKR 2,000',
+    this.serviceName = 'Plumbing',
+    this.subServiceName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -51,11 +73,12 @@ class ConfirmBookingScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.cardWhite,
-                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.neutral.withValues(alpha: 0.06),
+                            color: Colors.black.withValues(alpha: 0.035),
                             blurRadius: 14,
                             offset: const Offset(0, 4),
                           ),
@@ -69,13 +92,13 @@ class ConfirmBookingScreen extends StatelessWidget {
                             clipBehavior: Clip.none,
                             children: [
                               ClipRRect(
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(16),
                                 child: Container(
                                   width: 66,
                                   height: 66,
-                                  color: AppColors.borderLight,
+                                  color: const Color(0xFFEFF6FF),
                                   child: Image.network(
-                                    'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=200&auto=format&fit=crop&q=80',
+                                    avatarUrl,
                                     width: 66,
                                     height: 66,
                                     fit: BoxFit.cover,
@@ -125,16 +148,18 @@ class ConfirmBookingScreen extends StatelessWidget {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      'Nimal Perera',
-                                      style: GoogleFonts.inter(
-                                        color: AppColors.textPrimary,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
+                                    Expanded(
+                                      child: Text(
+                                        workerName,
+                                        style: GoogleFonts.inter(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                       ),
                                     ),
                                     Text(
-                                      '0.5 km away',
+                                      distance,
                                       style: GoogleFonts.inter(
                                         color: AppColors.textSecondary,
                                         fontSize: 12,
@@ -145,7 +170,7 @@ class ConfirmBookingScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 3),
                                 Text(
-                                  'Plumber',
+                                  workerRole,
                                   style: GoogleFonts.inter(
                                     color: AppColors.textSecondary,
                                     fontSize: 14,
@@ -162,7 +187,7 @@ class ConfirmBookingScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      '4.8',
+                                      '$rating',
                                       style: GoogleFonts.inter(
                                         color: AppColors.textPrimary,
                                         fontSize: 13,
@@ -171,7 +196,7 @@ class ConfirmBookingScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 3),
                                     Text(
-                                      '(120)',
+                                      '($reviewsCount)',
                                       style: GoogleFonts.inter(
                                         color: AppColors.textMuted,
                                         fontSize: 13,
@@ -221,7 +246,7 @@ class ConfirmBookingScreen extends StatelessWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Kitchen sink pipe is leaking.',
+                            subServiceName ?? 'General $serviceName Inspection & Service',
                             style: GoogleFonts.inter(
                               color: AppColors.textPrimary,
                               fontSize: 14,
@@ -236,14 +261,14 @@ class ConfirmBookingScreen extends StatelessWidget {
 
                     // 4. Location & Time Card
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 16),
+                      padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: AppColors.cardWhite,
-                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.neutral.withValues(alpha: 0.06),
+                            color: Colors.black.withValues(alpha: 0.035),
                             blurRadius: 14,
                             offset: const Offset(0, 4),
                           ),
@@ -254,19 +279,26 @@ class ConfirmBookingScreen extends StatelessWidget {
                           // Location row
                           Row(
                             children: [
-                              const Icon(
-                                Icons.location_on_outlined,
-                                color: AppColors.textSecondary,
-                                size: 22,
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFF6FF),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.location_on_rounded,
+                                  color: Color(0xFF005AC2),
+                                  size: 20,
+                                ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   '24, Galle Road, Colombo 03',
                                   style: GoogleFonts.inter(
-                                    color: AppColors.textPrimary,
+                                    color: const Color(0xFF0F172A),
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
@@ -277,44 +309,51 @@ class ConfirmBookingScreen extends StatelessWidget {
                             child: Divider(
                               height: 1,
                               thickness: 1,
-                              color: AppColors.borderLight.withValues(alpha: 0.5),
+                              color: const Color(0xFFF1F5F9),
                             ),
                           ),
                           // Date & Time row
                           Row(
                             children: [
-                              const Icon(
-                                Icons.calendar_today_outlined,
-                                color: AppColors.textSecondary,
-                                size: 19,
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEF3C7),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.calendar_today_rounded,
+                                  color: Color(0xFFD97706),
+                                  size: 18,
+                                ),
                               ),
-                              const SizedBox(width: 14),
+                              const SizedBox(width: 12),
                               Text(
                                 '25 May 2024',
                                 style: GoogleFonts.inter(
-                                  color: AppColors.textPrimary,
+                                  color: const Color(0xFF0F172A),
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               Padding(
                                 padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
+                                    const EdgeInsets.symmetric(horizontal: 10),
                                 child: Text(
-                                  '|',
+                                  '•',
                                   style: GoogleFonts.inter(
-                                    color: AppColors.textMuted,
+                                    color: const Color(0xFF94A3B8),
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w400,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                               Text(
                                 '10:00 AM',
                                 style: GoogleFonts.inter(
-                                  color: AppColors.textPrimary,
+                                  color: const Color(0xFF005AC2),
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
@@ -323,43 +362,64 @@ class ConfirmBookingScreen extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 20),
 
                     // 5. Total Estimated Cost Box
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: AppColors.primarySurface,
-                        borderRadius: BorderRadius.circular(18),
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: const Color(0xFFDBEAFE)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'TOTAL ESTIMATED COST',
-                            style: GoogleFonts.inter(
-                              color: AppColors.primary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.6,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'TOTAL ESTIMATED COST',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF005AC2),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.6,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFDCFCE7),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Text(
+                                  'Fair Price',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF166534),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'LKR 2,000 - 2,500',
+                            price,
                             style: GoogleFonts.inter(
-                              color: AppColors.primary,
+                              color: const Color(0xFF005AC2),
                               fontSize: 24,
                               fontWeight: FontWeight.w800,
                               letterSpacing: -0.5,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           Text(
                             'Final price may vary based on actual work required.',
                             style: GoogleFonts.inter(
-                              color: AppColors.textSecondary,
+                              color: const Color(0xFF64748B),
                               fontSize: 12,
                               fontStyle: FontStyle.italic,
                               fontWeight: FontWeight.w400,
@@ -384,7 +444,14 @@ class ConfirmBookingScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const PaymentScreen(),
+                        builder: (context) => PaymentScreen(
+                          workerName: workerName,
+                          workerRole: workerRole,
+                          avatarUrl: avatarUrl,
+                          price: price,
+                          serviceName: serviceName,
+                          subServiceName: subServiceName,
+                        ),
                       ),
                     );
                   },

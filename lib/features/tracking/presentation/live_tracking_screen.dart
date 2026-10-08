@@ -5,7 +5,21 @@ import '../../chat/presentation/chat_screen.dart';
 import '../../booking/presentation/booking_details_screen.dart';
 
 class LiveTrackingScreen extends StatelessWidget {
-  const LiveTrackingScreen({super.key});
+  final String workerName;
+  final String workerRole;
+  final double rating;
+  final int reviewsCount;
+  final String avatarUrl;
+
+  const LiveTrackingScreen({
+    super.key,
+    this.workerName = 'Nimal Perera',
+    this.workerRole = 'Plumber',
+    this.rating = 4.8,
+    this.reviewsCount = 120,
+    this.avatarUrl =
+        'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=80',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -271,7 +285,7 @@ class LiveTrackingScreen extends StatelessWidget {
                           ),
                           child: ClipOval(
                             child: Image.network(
-                              'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=200&auto=format&fit=crop&q=80',
+                              avatarUrl,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   Container(
@@ -320,7 +334,7 @@ class LiveTrackingScreen extends StatelessWidget {
                           height: 52,
                           color: AppColors.borderLight,
                           child: Image.network(
-                            'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80',
+                            avatarUrl,
                             width: 52,
                             height: 52,
                             fit: BoxFit.cover,
@@ -363,7 +377,7 @@ class LiveTrackingScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Nimal Perera',
+                          workerName,
                           style: GoogleFonts.inter(
                             color: AppColors.textPrimary,
                             fontSize: 15,
@@ -372,7 +386,7 @@ class LiveTrackingScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Plumber',
+                          workerRole,
                           style: GoogleFonts.inter(
                             color: AppColors.textSecondary,
                             fontSize: 13,
@@ -389,7 +403,7 @@ class LiveTrackingScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 3),
                             Text(
-                              '4.8 (120)',
+                              '$rating ($reviewsCount)',
                               style: GoogleFonts.inter(
                                 color: AppColors.textSecondary,
                                 fontSize: 12,
