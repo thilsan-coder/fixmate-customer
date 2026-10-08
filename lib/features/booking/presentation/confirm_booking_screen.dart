@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../payment/presentation/payment_screen.dart';
+import '../../../core/routes/app_routes.dart';
+import '../../tracking/presentation/live_tracking_screen.dart';
 
-class ConfirmBookingScreen extends StatelessWidget {
+class ConfirmBookingScreen extends StatefulWidget {
   final String workerName;
   final String workerRole;
   final String distance;
@@ -27,6 +28,154 @@ class ConfirmBookingScreen extends StatelessWidget {
     this.serviceName = 'Plumbing',
     this.subServiceName,
   });
+
+  @override
+  State<ConfirmBookingScreen> createState() => _ConfirmBookingScreenState();
+}
+
+class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
+  // 0: Cash on Delivery (Default), 1: Credit / Debit Card
+  int _selectedPaymentMethod = 0;
+
+  void _showBookingSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          elevation: 16,
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Success Badge
+                Container(
+                  width: 76,
+                  height: 76,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCFCE7),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFF86EFAC), width: 2),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.check_circle_rounded,
+                      color: Color(0xFF16A34A),
+                      size: 44,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                Text(
+                  'Booking Confirmed!',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0F172A),
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                Text(
+                  'Your booking with ${widget.workerName} has been successfully placed.\nPayment Method: ${_selectedPaymentMethod == 0 ? "Cash on Delivery" : "Card Payment"}',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: const Color(0xFF64748B),
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Primary Button: Track Worker Live
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Close dialog
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LiveTrackingScreen(
+                            workerName: widget.workerName,
+                            workerRole: widget.workerRole,
+                            rating: widget.rating,
+                            reviewsCount: widget.reviewsCount,
+                            avatarUrl: widget.avatarUrl,
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF005AC2),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.location_searching_rounded, size: 20, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text(
+                          'Track Worker Live',
+                          style: TextStyle(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Secondary Button: Back to Home
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Close dialog
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        AppRoutes.home,
+                        (route) => false,
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      'Back to Home',
+                      style: TextStyle(
+                        color: Color(0xFF334155),
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +247,7 @@ class ConfirmBookingScreen extends StatelessWidget {
                                   height: 66,
                                   color: const Color(0xFFEFF6FF),
                                   child: Image.network(
-                                    avatarUrl,
+                                    widget.avatarUrl,
                                     width: 66,
                                     height: 66,
                                     fit: BoxFit.cover,
@@ -150,7 +299,7 @@ class ConfirmBookingScreen extends StatelessWidget {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        workerName,
+                                        widget.workerName,
                                         style: GoogleFonts.inter(
                                           color: AppColors.textPrimary,
                                           fontSize: 16,
@@ -159,7 +308,7 @@ class ConfirmBookingScreen extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      distance,
+                                      widget.distance,
                                       style: GoogleFonts.inter(
                                         color: AppColors.textSecondary,
                                         fontSize: 12,
@@ -170,7 +319,7 @@ class ConfirmBookingScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 3),
                                 Text(
-                                  workerRole,
+                                  widget.workerRole,
                                   style: GoogleFonts.inter(
                                     color: AppColors.textSecondary,
                                     fontSize: 14,
@@ -187,7 +336,7 @@ class ConfirmBookingScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      '$rating',
+                                      '${widget.rating}',
                                       style: GoogleFonts.inter(
                                         color: AppColors.textPrimary,
                                         fontSize: 13,
@@ -196,7 +345,7 @@ class ConfirmBookingScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 3),
                                     Text(
-                                      '($reviewsCount)',
+                                      '(${widget.reviewsCount})',
                                       style: GoogleFonts.inter(
                                         color: AppColors.textMuted,
                                         fontSize: 13,
@@ -212,56 +361,64 @@ class ConfirmBookingScreen extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
                     // 2. Service Details Title
                     Text(
                       'Service Details',
                       style: GoogleFonts.inter(
                         color: AppColors.textPrimary,
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
 
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 10),
 
                     // 3. Issue Note Row
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryLightest,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.description_outlined,
-                            color: AppColors.primary,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            subServiceName ?? 'General $serviceName Inspection & Service',
-                            style: GoogleFonts.inter(
-                              color: AppColors.textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryLightest,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.description_outlined,
+                              color: AppColors.primary,
+                              size: 20,
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              widget.subServiceName ?? 'General ${widget.serviceName} Inspection & Service',
+                              style: GoogleFonts.inter(
+                                color: AppColors.textPrimary,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 16),
 
                     // 4. Location & Time Card
                     Container(
-                      padding: const EdgeInsets.all(18),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(22),
@@ -288,7 +445,7 @@ class ConfirmBookingScreen extends StatelessWidget {
                                 child: const Icon(
                                   Icons.location_on_rounded,
                                   color: Color(0xFF005AC2),
-                                  size: 20,
+                                  size: 18,
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -297,19 +454,19 @@ class ConfirmBookingScreen extends StatelessWidget {
                                   '24, Galle Road, Colombo 03',
                                   style: GoogleFonts.inter(
                                     color: const Color(0xFF0F172A),
-                                    fontSize: 14,
+                                    fontSize: 13.5,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 10),
                             child: Divider(
                               height: 1,
                               thickness: 1,
-                              color: const Color(0xFFF1F5F9),
+                              color: Color(0xFFF1F5F9),
                             ),
                           ),
                           // Date & Time row
@@ -324,7 +481,7 @@ class ConfirmBookingScreen extends StatelessWidget {
                                 child: const Icon(
                                   Icons.calendar_today_rounded,
                                   color: Color(0xFFD97706),
-                                  size: 18,
+                                  size: 16,
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -332,7 +489,7 @@ class ConfirmBookingScreen extends StatelessWidget {
                                 '25 May 2024',
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF0F172A),
-                                  fontSize: 14,
+                                  fontSize: 13.5,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -349,10 +506,10 @@ class ConfirmBookingScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                '10:00 AM',
+                                '10:00 AM (Immediate)',
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF005AC2),
-                                  fontSize: 14,
+                                  fontSize: 13.5,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -362,12 +519,12 @@ class ConfirmBookingScreen extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
 
-                    // 5. Total Estimated Cost Box
+                    // 5. Total Estimated / Negotiated Cost Box
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEFF6FF),
                         borderRadius: BorderRadius.circular(22),
@@ -380,10 +537,10 @@ class ConfirmBookingScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'TOTAL ESTIMATED COST',
+                                'AGREED BOOKING AMOUNT',
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF005AC2),
-                                  fontSize: 11.5,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 0.6,
                                 ),
@@ -395,9 +552,9 @@ class ConfirmBookingScreen extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Text(
-                                  'Fair Price',
+                                  'Agreed / Fair Price',
                                   style: TextStyle(
-                                    fontSize: 11,
+                                    fontSize: 10.5,
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xFF166534),
                                   ),
@@ -405,22 +562,22 @@ class ConfirmBookingScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           Text(
-                            price,
+                            widget.price,
                             style: GoogleFonts.inter(
                               color: const Color(0xFF005AC2),
-                              fontSize: 24,
+                              fontSize: 22,
                               fontWeight: FontWeight.w800,
                               letterSpacing: -0.5,
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 4),
                           Text(
-                            'Final price may vary based on actual work required.',
+                            'Amount agreed with worker or default standard rate.',
                             style: GoogleFonts.inter(
                               color: const Color(0xFF64748B),
-                              fontSize: 12,
+                              fontSize: 11.5,
                               fontStyle: FontStyle.italic,
                               fontWeight: FontWeight.w400,
                             ),
@@ -428,33 +585,173 @@ class ConfirmBookingScreen extends StatelessWidget {
                         ],
                       ),
                     ),
+
+                    const SizedBox(height: 20),
+
+                    // 6. Select Payment Method Header & Options
+                    Text(
+                      'Payment Method',
+                      style: GoogleFonts.inter(
+                        color: AppColors.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Option A: Cash on Delivery
+                    InkWell(
+                      onTap: () => setState(() => _selectedPaymentMethod = 0),
+                      borderRadius: BorderRadius.circular(18),
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: _selectedPaymentMethod == 0
+                              ? const Color(0xFFEFF6FF)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: _selectedPaymentMethod == 0
+                                ? const Color(0xFF005AC2)
+                                : const Color(0xFFE2E8F0),
+                            width: _selectedPaymentMethod == 0 ? 1.8 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFDCFCE7),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.payments_rounded,
+                                color: Color(0xFF16A34A),
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Cash on Delivery',
+                                    style: TextStyle(
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Pay in cash directly to worker after job completion',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              _selectedPaymentMethod == 0
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_off_rounded,
+                              color: _selectedPaymentMethod == 0
+                                  ? const Color(0xFF005AC2)
+                                  : const Color(0xFF94A3B8),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Option B: Card / Online
+                    InkWell(
+                      onTap: () => setState(() => _selectedPaymentMethod = 1),
+                      borderRadius: BorderRadius.circular(18),
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: _selectedPaymentMethod == 1
+                              ? const Color(0xFFEFF6FF)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: _selectedPaymentMethod == 1
+                                ? const Color(0xFF005AC2)
+                                : const Color(0xFFE2E8F0),
+                            width: _selectedPaymentMethod == 1 ? 1.8 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.credit_card_rounded,
+                                color: Color(0xFF005AC2),
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Credit / Debit Card',
+                                    style: TextStyle(
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Visa, Mastercard & Online Banking',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              _selectedPaymentMethod == 1
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_off_rounded,
+                              color: _selectedPaymentMethod == 1
+                                  ? const Color(0xFF005AC2)
+                                  : const Color(0xFF94A3B8),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                   ],
                 ),
               ),
             ),
 
-            // 6. Bottom Action Button (Primary Button)
+            // 7. Bottom Confirm Booking Button
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
               child: SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: 54,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PaymentScreen(
-                          workerName: workerName,
-                          workerRole: workerRole,
-                          avatarUrl: avatarUrl,
-                          price: price,
-                          serviceName: serviceName,
-                          subServiceName: subServiceName,
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: _showBookingSuccessDialog,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
@@ -477,8 +774,8 @@ class ConfirmBookingScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       const Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        size: 14,
+                        Icons.check_circle_outline_rounded,
+                        size: 18,
                         color: Colors.white,
                       ),
                     ],

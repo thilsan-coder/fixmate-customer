@@ -1,23 +1,126 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/routes/app_routes.dart';
 import '../../payment/presentation/invoice_screen.dart';
 
 class JobCompletedScreen extends StatefulWidget {
-  const JobCompletedScreen({super.key});
+  final String workerName;
+  final String workerRole;
+  final String avatarUrl;
+  final String price;
+
+  const JobCompletedScreen({
+    super.key,
+    this.workerName = 'Nimal Perera',
+    this.workerRole = 'Plumber',
+    this.avatarUrl =
+        'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&fit=crop&q=80',
+    this.price = 'LKR 2,000',
+  });
 
   @override
   State<JobCompletedScreen> createState() => _JobCompletedScreenState();
 }
 
 class _JobCompletedScreenState extends State<JobCompletedScreen> {
-  int _selectedRating = 0; // 0 = unrated, 1 to 5 stars
-  final TextEditingController _feedbackController = TextEditingController();
+  int _selectedRating = 5; // Default 5 stars
+  final TextEditingController _feedbackController = TextEditingController(
+    text: 'Excellent and very professional work! Arrived on time and solved the issue cleanly.',
+  );
+  final Set<String> _selectedTags = {'On Time ⏱️', 'Clean Work 🧹', 'Expert Service 🛠️'};
+
+  final List<String> _quickTags = [
+    'On Time ⏱️',
+    'Clean Work 🧹',
+    'Expert Service 🛠️',
+    'Fair Price 💰',
+    'Polite & Friendly 😊',
+    'Safety Verified 🛡️',
+  ];
 
   @override
   void dispose() {
     _feedbackController.dispose();
     super.dispose();
+  }
+
+  void _submitReview() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 68,
+                height: 68,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFDCFCE7),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.stars_rounded,
+                  color: Color(0xFF16A34A),
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Thank You for Your Feedback!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Your $_selectedRating-star rating has been added to ${widget.workerName}\'s profile.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close dialog
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.home,
+                      (route) => false,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF005AC2),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    'Return to Home',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -50,107 +153,138 @@ class _JobCompletedScreenState extends State<JobCompletedScreen> {
             letterSpacing: -0.3,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: AppColors.primary,
-              size: 24,
-            ),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 6),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // 1. Hero Illustration Container
+              // 1. Worker Profile Summary Card
               Container(
-                width: double.infinity,
-                height: 240,
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF5E9FA8),
-                  borderRadius: BorderRadius.circular(32),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.neutral.withValues(alpha: 0.08),
-                      blurRadius: 18,
-                      offset: const Offset(0, 6),
+                      color: Colors.black.withValues(alpha: 0.035),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(32),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Handyman Illustration Avatar
-                      Positioned(
-                        bottom: 0,
-                        child: Image.network(
-                          'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=500&auto=format&fit=crop&q=80',
-                          width: 200,
-                          height: 210,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
-                            Icons.handyman_rounded,
-                            color: Colors.white,
-                            size: 100,
+                child: Row(
+                  children: [
+                    // Worker Avatar with Checkmark
+                    Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            color: const Color(0xFFEFF6FF),
+                            child: Image.network(
+                              widget.avatarUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.person, color: Color(0xFF005AC2), size: 30),
+                            ),
                           ),
                         ),
-                      ),
-
-                      // Bright Green Checkmark Graphic
-                      Positioned(
-                        right: 28,
-                        top: 40,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF78C236).withValues(alpha: 0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.check_rounded,
-                            color: Color(0xFF78C236),
-                            size: 54,
+                        Positioned(
+                          bottom: -2,
+                          right: -2,
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF16A34A),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                            child: const Icon(Icons.check, size: 12, color: Colors.white),
                           ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(width: 14),
+
+                    // Worker Name & Finished Status
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                widget.workerName,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.verified_rounded, size: 16, color: Color(0xFF005AC2)),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.workerRole,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
+                    ),
 
-              const SizedBox(height: 24),
-
-              // 2. Heading & Subtitle Text
-              Text(
-                'Job Completed!',
-                style: GoogleFonts.inter(
-                  color: AppColors.textPrimary,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.4,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'How was your experience?',
-                style: GoogleFonts.inter(
-                  color: AppColors.textSecondary,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
+                    // Amount Paid / Agreed Pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDCFCE7),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        widget.price,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF166534),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
               const SizedBox(height: 20),
+
+              // 2. Main Heading & Subtitle
+              const Text(
+                'How was your experience?',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Rate your service experience with this professional',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+
+              const SizedBox(height: 18),
 
               // 3. Interactive Star Rating Row
               Row(
@@ -168,42 +302,81 @@ class _JobCompletedScreenState extends State<JobCompletedScreen> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6),
                       child: Icon(
-                        isSelected
-                            ? Icons.star_rounded
-                            : Icons.star_border_rounded,
-                        color: AppColors.secondary,
-                        size: 38,
+                        isSelected ? Icons.star_rounded : Icons.star_border_rounded,
+                        color: const Color(0xFFF59E0B),
+                        size: 44,
                       ),
                     ),
                   );
                 }),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 18),
 
-              // 4. Multi-line Feedback Box
+              // 4. Quick Feedback Compliment Tags
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
+                children: _quickTags.map((tag) {
+                  final isSelected = _selectedTags.contains(tag);
+                  return FilterChip(
+                    label: Text(
+                      tag,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected ? const Color(0xFF005AC2) : const Color(0xFF475569),
+                      ),
+                    ),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() {
+                        if (selected) {
+                          _selectedTags.add(tag);
+                        } else {
+                          _selectedTags.remove(tag);
+                        }
+                      });
+                    },
+                    backgroundColor: Colors.white,
+                    selectedColor: const Color(0xFFEFF6FF),
+                    checkmarkColor: const Color(0xFF005AC2),
+                    side: BorderSide(
+                      color: isSelected ? const Color(0xFF005AC2) : const Color(0xFFE2E8F0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  );
+                }).toList(),
+              ),
+
+              const SizedBox(height: 18),
+
+              // 5. Multi-line Feedback Box
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0F4FA),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: AppColors.borderLight.withValues(alpha: 0.5),
+                    color: const Color(0xFFE2E8F0),
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: TextField(
                   controller: _feedbackController,
-                  minLines: 4,
-                  maxLines: 5,
-                  style: GoogleFonts.inter(
+                  minLines: 3,
+                  maxLines: 4,
+                  style: const TextStyle(
                     fontSize: 14,
-                    color: AppColors.textPrimary,
+                    color: Color(0xFF0F172A),
                   ),
-                  decoration: InputDecoration(
-                    hintText: 'Great service! Very professional.',
-                    hintStyle: GoogleFonts.inter(
-                      color: AppColors.textMuted,
-                      fontSize: 14,
+                  decoration: const InputDecoration(
+                    hintText: 'Share more details about the service...',
+                    hintStyle: TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 13.5,
                     ),
                     border: InputBorder.none,
                     isDense: true,
@@ -212,47 +385,39 @@ class _JobCompletedScreenState extends State<JobCompletedScreen> {
                 ),
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
-              // 5. Action Buttons
+              // 6. Action Buttons
               // Primary Button: Submit Review
               SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: 52,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const InvoiceScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: _submitReview,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: const Color(0xFF005AC2),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Submit Review',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.2,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
 
               // Secondary Button: View Invoice
               SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: 50,
                 child: OutlinedButton(
                   onPressed: () {
                     Navigator.push(
@@ -263,21 +428,20 @@ class _JobCompletedScreenState extends State<JobCompletedScreen> {
                     );
                   },
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
                     side: const BorderSide(
-                      color: AppColors.primary,
-                      width: 1.5,
+                      color: Color(0xFFCBD5E1),
+                      width: 1.2,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: Text(
-                    'View Invoice',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.2,
+                  child: const Text(
+                    'View Service Invoice',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF334155),
                     ),
                   ),
                 ),
