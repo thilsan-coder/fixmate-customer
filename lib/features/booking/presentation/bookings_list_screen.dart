@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/services/booking_service.dart';
+import '../../../core/widgets/fix_mate_bottom_nav.dart';
 import 'booking_details_screen.dart';
 import 'job_progress_screen.dart';
 import '../../payment/presentation/invoice_screen.dart';
@@ -15,7 +16,6 @@ class BookingsListScreen extends StatefulWidget {
 }
 
 class _BookingsListScreenState extends State<BookingsListScreen> {
-  int _currentNavIndex = 1; // "Bookings" active tab
   int _selectedFilterIndex = 0; // 0: All, 1: In Progress, 2: Completed, 3: Scheduled
 
   final List<String> _filterTabs = ['All', 'In Progress', 'Completed', 'Scheduled'];
@@ -277,47 +277,9 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
         ),
       ),
 
-      // 5. Bottom Navigation Bar
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: SafeArea(
-          top: false,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                icon: Icons.home_outlined,
-                label: 'Home',
-                index: 0,
-              ),
-              _buildNavItem(
-                icon: Icons.calendar_month_outlined,
-                label: 'Bookings',
-                index: 1,
-              ),
-              _buildNavItem(
-                icon: Icons.chat_bubble_outline_rounded,
-                label: 'Chat',
-                index: 2,
-              ),
-              _buildNavItem(
-                icon: Icons.person_outline_rounded,
-                label: 'Profile',
-                index: 3,
-              ),
-            ],
-          ),
-        ),
+      // 5. Unified Bottom Navigation Bar
+      bottomNavigationBar: const FixMateBottomNav(
+        currentIndex: 1,
       ),
     );
   }
@@ -634,73 +596,5 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
         ),
       );
     }
-  }
-
-  // Bottom Navigation Bar Item Builder
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required int index,
-  }) {
-    final bool isActive = _currentNavIndex == index;
-
-    if (isActive) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFD0E2FF),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: AppColors.primary, size: 22),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                color: AppColors.primary,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _currentNavIndex = index;
-        });
-        if (index == 0) {
-          Navigator.pushNamedAndRemoveUntil(
-              context, AppRoutes.home, (route) => false);
-        } else if (index == 2) {
-          Navigator.pushNamed(context, AppRoutes.chat);
-        } else if (index == 3) {
-          Navigator.pushNamed(context, AppRoutes.editProfile);
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: const Color(0xFF64748B), size: 22),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                color: const Color(0xFF64748B),
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

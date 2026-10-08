@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../core/constants/app_assets.dart';
 import '../../../core/constants/country_data.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/services/session_manager.dart';
+import '../../../core/widgets/fix_mate_bottom_nav.dart';
+import '../../booking/presentation/book_service_screen.dart';
 import 'all_categories_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -15,7 +16,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentNavIndex = 0;
   String _userName = 'Alex';
   String _userCity = 'Colombo';
 
@@ -454,29 +454,202 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Logout Handler
   Future<void> _handleLogout() async {
-    final confirm = await showDialog<bool>(
+    final confirm = await showModalBottomSheet<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('Are you sure you want to log out from FixMate?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text('Logout'),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 30),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Top drag bar
+              Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE2E8F0),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Glowing Red Logout Icon Container
+              Container(
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF2F2),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFFECACA), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.logout_rounded,
+                    color: Color(0xFFDC2626),
+                    size: 36,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // Title
+              const Text(
+                'Are you sure you want to log out?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0F172A),
+                  letterSpacing: -0.4,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Subtitle
+              const Text(
+                'You will need to sign in again with your phone number to access your bookings, live tracking and wallet balance.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF64748B),
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // Account card preview
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEFF6FF),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.person_rounded, color: Color(0xFF005AC2), size: 24),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _userName,
+                            style: const TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                          Text(
+                            '$_userCity, ${CountryData.selectedCountry.name}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF64748B),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.lock_outline_rounded, size: 12, color: Color(0xFF005AC2)),
+                          SizedBox(width: 3),
+                          Text('Active', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF005AC2))),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Action Buttons: Cancel vs Logout
+              Row(
+                children: [
+                  // Cancel / Keep Logged In
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.2),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF475569),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Confirm Logout
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: () => Navigator.pop(context, true),
+                        icon: const Icon(Icons.logout_rounded, color: Colors.white, size: 18),
+                        label: const Text(
+                          'Yes, Log Out',
+                          style: TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFDC2626),
+                          elevation: 2,
+                          shadowColor: const Color(0xFFDC2626).withValues(alpha: 0.3),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
 
     if (confirm == true) {
@@ -911,13 +1084,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   return InkWell(
                     onTap: () {
                       final id = cat['id'] as String;
-                      final initialId = id == 'more' ? 'electrician' : id;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AllCategoriesScreen(initialCategoryId: initialId),
-                        ),
-                      );
+                      if (id == 'more') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AllCategoriesScreen(),
+                          ),
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookServiceScreen(
+                              serviceName: cat['title'] as String,
+                              isCategoryFixed: true,
+                            ),
+                          ),
+                        );
+                      }
                     },
                     borderRadius: BorderRadius.circular(18),
                     child: Column(
@@ -1158,79 +1342,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
-      // 7. Sleek Bottom Navigation Bar (Home, Bookings, Chat, Profile)
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentNavIndex,
-          onTap: (index) {
-            if (index == 0) {
-              setState(() => _currentNavIndex = 0);
-            } else if (index == 1) {
-              Navigator.pushNamed(context, AppRoutes.bookingsList).then((_) {
-                if (mounted) setState(() => _currentNavIndex = 0);
-              });
-            } else if (index == 2) {
-              Navigator.pushNamed(context, AppRoutes.chat).then((_) {
-                if (mounted) setState(() => _currentNavIndex = 0);
-              });
-            } else if (index == 3) {
-              Navigator.pushNamed(context, AppRoutes.editProfile).then((_) {
-                if (mounted) setState(() => _currentNavIndex = 0);
-              });
-            }
-          },
-          backgroundColor: Colors.white,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFF005AC2),
-          unselectedItemColor: const Color(0xFF94A3B8),
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
-          elevation: 0,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Iconsax.home_2, size: 22),
-              ),
-              activeIcon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Iconsax.home_2, size: 22, color: Color(0xFF005AC2)),
-              ),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Iconsax.calendar_1, size: 22),
-              ),
-              label: 'Bookings',
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Iconsax.message, size: 22),
-              ),
-              label: 'Chat',
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Iconsax.user, size: 22),
-              ),
-              label: 'Profile',
-            ),
-          ],
-        ),
+      // 7. Sleek Unified Bottom Navigation Bar
+      bottomNavigationBar: const FixMateBottomNav(
+        currentIndex: 0,
       ),
     );
   }

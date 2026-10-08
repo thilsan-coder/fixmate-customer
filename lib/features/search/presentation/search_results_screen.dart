@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/routes/app_routes.dart';
+import '../../../core/widgets/fix_mate_bottom_nav.dart';
 import '../../workers/presentation/worker_profile_screen.dart';
 
 class WorkerItem {
@@ -49,7 +49,6 @@ class SearchResultsScreen extends StatefulWidget {
 class _SearchResultsScreenState extends State<SearchResultsScreen> {
   late final TextEditingController _searchController;
   int _selectedFilterIndex = 0; // 0: Distance, 1: Rating, 2: Price
-  int _currentNavIndex = 1; // "Bookings" active tab
 
   final List<String> _filters = ['Distance', 'Rating', 'Price'];
   late List<WorkerItem> _workers;
@@ -609,46 +608,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       ),
 
       // 4. Bottom Navigation Bar
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: SafeArea(
-          top: false,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                icon: Icons.home_outlined,
-                label: 'Home',
-                index: 0,
-              ),
-              _buildNavItem(
-                icon: Icons.calendar_month_outlined,
-                label: 'Bookings',
-                index: 1,
-              ),
-              _buildNavItem(
-                icon: Icons.chat_bubble_outline_rounded,
-                label: 'Chat',
-                index: 2,
-              ),
-              _buildNavItem(
-                icon: Icons.person_outline_rounded,
-                label: 'Profile',
-                index: 3,
-              ),
-            ],
-          ),
-        ),
+      bottomNavigationBar: const FixMateBottomNav(
+        currentIndex: -1,
       ),
     );
   }
@@ -950,67 +911,12 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                         color: Colors.white,
                         size: 16,
                       ),
-                    ),
-                  ],
+                    ),                  ],
                 ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  // Bottom Navigation Bar Item Builder
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required int index,
-  }) {
-    final bool isActive = _currentNavIndex == index;
-
-    if (isActive) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEFF6FF),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: const Color(0xFF005AC2), size: 20),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF005AC2),
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _currentNavIndex = index;
-        });
-        if (index == 0) {
-          Navigator.pushNamedAndRemoveUntil(
-              context, AppRoutes.home, (route) => false);
-        } else if (index == 2) {
-          Navigator.pushNamed(context, AppRoutes.chat);
-        } else if (index == 3) {
-          Navigator.pushNamed(context, AppRoutes.editProfile);
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Icon(icon, color: const Color(0xFF94A3B8), size: 22),
       ),
     );
   }

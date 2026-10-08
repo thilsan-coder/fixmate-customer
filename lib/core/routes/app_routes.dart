@@ -33,7 +33,7 @@ import '../../features/payment/presentation/invoice_screen.dart';
 
 // Tracking & Chat
 import '../../features/tracking/presentation/live_tracking_screen.dart';
-import '../../features/chat/presentation/chat_screen.dart';
+import '../../features/chat/presentation/chat_list_screen.dart';
 
 // Profile, Notifications & Support
 import '../../features/profile/presentation/edit_profile_screen.dart';
@@ -96,7 +96,7 @@ class AppRoutes {
         findingWorkers: (context) => const FindingWorkersScreen(),
         bookingConfirmed: (context) => const BookingConfirmedScreen(),
         liveTracking: (context) => const LiveTrackingScreen(),
-        chat: (context) => const ChatScreen(),
+        chat: (context) => const ChatListScreen(),
         bookingDetails: (context) => const BookingDetailsScreen(),
         jobProgress: (context) => const JobProgressScreen(),
         jobCompleted: (context) => const JobCompletedScreen(),

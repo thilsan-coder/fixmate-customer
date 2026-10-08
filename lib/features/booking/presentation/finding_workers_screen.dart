@@ -197,7 +197,7 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
               ),
               const SizedBox(height: 12),
               Text(
-                'We are notifying nearby professionals\nabout your plumbing emergency.',
+                'We are notifying nearby professionals\nabout your ${widget.serviceName.toLowerCase()} request.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   color: AppColors.textSecondary,
@@ -261,7 +261,7 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Plumbing ...',
+                            '${widget.serviceName} Service',
                             style: GoogleFonts.inter(
                               color: AppColors.textPrimary,
                               fontSize: 16,
@@ -274,7 +274,7 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
 
                     // Estimated Price
                     Text(
-                      'EST. LKR 2,000 - 2,500',
+                      'EST. ${widget.price}',
                       style: GoogleFonts.inter(
                         color: AppColors.primary,
                         fontSize: 13,
