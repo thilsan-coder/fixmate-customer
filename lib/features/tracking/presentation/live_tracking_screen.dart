@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../chat/presentation/chat_screen.dart';
-import '../../booking/presentation/job_completed_screen.dart';
+import '../../booking/presentation/job_progress_screen.dart';
 
 class LiveTrackingScreen extends StatefulWidget {
   final String workerName;
@@ -11,6 +11,9 @@ class LiveTrackingScreen extends StatefulWidget {
   final double rating;
   final int reviewsCount;
   final String avatarUrl;
+  final String price;
+  final String serviceName;
+  final String? subServiceName;
 
   const LiveTrackingScreen({
     super.key,
@@ -20,6 +23,9 @@ class LiveTrackingScreen extends StatefulWidget {
     this.reviewsCount = 120,
     this.avatarUrl =
         'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=80',
+    this.price = 'LKR 2,000',
+    this.serviceName = 'Plumbing',
+    this.subServiceName,
   });
 
   @override
@@ -66,35 +72,19 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
         _etaMinutes = 0;
         _distanceKm = 0.0;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('📍 ${widget.workerName} has arrived at your location!'),
-          backgroundColor: const Color(0xFF16A34A),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } else if (_currentStep == 1) {
-      setState(() {
-        _currentStep = 2;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('⚙️ Work in progress started with ${widget.workerName}'),
-          backgroundColor: const Color(0xFF005AC2),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } else if (_currentStep == 2) {
-      setState(() {
-        _currentStep = 3;
-      });
+    } else if (_currentStep == 1 || _currentStep == 2) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => JobCompletedScreen(
+          builder: (context) => JobProgressScreen(
             workerName: widget.workerName,
             workerRole: widget.workerRole,
             avatarUrl: widget.avatarUrl,
+            rating: widget.rating,
+            reviewsCount: widget.reviewsCount,
+            price: widget.price,
+            serviceName: widget.serviceName,
+            subServiceName: widget.subServiceName,
           ),
         ),
       );

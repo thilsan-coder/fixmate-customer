@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/routes/app_routes.dart';
+import '../../../core/services/booking_service.dart';
 import '../../tracking/presentation/live_tracking_screen.dart';
 
 class ConfirmBookingScreen extends StatefulWidget {
@@ -36,146 +36,6 @@ class ConfirmBookingScreen extends StatefulWidget {
 class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   // 0: Cash on Delivery (Default), 1: Credit / Debit Card
   int _selectedPaymentMethod = 0;
-
-  void _showBookingSuccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-          elevation: 16,
-          backgroundColor: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Success Badge
-                Container(
-                  width: 76,
-                  height: 76,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF86EFAC), width: 2),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.check_circle_rounded,
-                      color: Color(0xFF16A34A),
-                      size: 44,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 18),
-
-                Text(
-                  'Booking Confirmed!',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF0F172A),
-                    letterSpacing: -0.3,
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                Text(
-                  'Your booking with ${widget.workerName} has been successfully placed.\nPayment Method: ${_selectedPaymentMethod == 0 ? "Cash on Delivery" : "Card Payment"}',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: const Color(0xFF64748B),
-                    height: 1.45,
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Primary Button: Track Worker Live
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context); // Close dialog
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => LiveTrackingScreen(
-                            workerName: widget.workerName,
-                            workerRole: widget.workerRole,
-                            rating: widget.rating,
-                            reviewsCount: widget.reviewsCount,
-                            avatarUrl: widget.avatarUrl,
-                          ),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF005AC2),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.location_searching_rounded, size: 20, color: Colors.white),
-                        SizedBox(width: 8),
-                        Text(
-                          'Track Worker Live',
-                          style: TextStyle(
-                            fontSize: 15.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                // Secondary Button: Back to Home
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context); // Close dialog
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        AppRoutes.home,
-                        (route) => false,
-                      );
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text(
-                      'Back to Home',
-                      style: TextStyle(
-                        color: Color(0xFF334155),
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -484,33 +344,42 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                                   size: 16,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Text(
-                                '25 May 2024',
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFF0F172A),
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 10),
-                                child: Text(
-                                  '•',
-                                  style: GoogleFonts.inter(
-                                    color: const Color(0xFF94A3B8),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                '10:00 AM (Immediate)',
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFF005AC2),
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.bold,
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      '25 May 2024',
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF0F172A),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                                      child: Text(
+                                        '•',
+                                        style: GoogleFonts.inter(
+                                          color: const Color(0xFF94A3B8),
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Flexible(
+                                      child: Text(
+                                        '10:00 AM (Immediate)',
+                                        style: GoogleFonts.inter(
+                                          color: const Color(0xFF005AC2),
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -751,7 +620,32 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 width: double.infinity,
                 height: 54,
                 child: ElevatedButton(
-                  onPressed: _showBookingSuccessDialog,
+                  onPressed: () {
+                    BookingService.createActiveBooking(
+                      workerName: widget.workerName,
+                      workerRole: widget.workerRole,
+                      avatarUrl: widget.avatarUrl,
+                      price: widget.price,
+                      serviceName: widget.serviceName,
+                      subServiceName: widget.subServiceName,
+                    );
+
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LiveTrackingScreen(
+                          workerName: widget.workerName,
+                          workerRole: widget.workerRole,
+                          rating: widget.rating,
+                          reviewsCount: widget.reviewsCount,
+                          avatarUrl: widget.avatarUrl,
+                          price: widget.price,
+                          serviceName: widget.serviceName,
+                          subServiceName: widget.subServiceName,
+                        ),
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,

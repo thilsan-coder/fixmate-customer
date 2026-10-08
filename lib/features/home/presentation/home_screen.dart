@@ -6,7 +6,6 @@ import '../../../core/constants/country_data.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/services/session_manager.dart';
 import 'all_categories_screen.dart';
-import '../../search/presentation/search_results_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -912,23 +911,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   return InkWell(
                     onTap: () {
                       final id = cat['id'] as String;
-                      if (id == 'more') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AllCategoriesScreen(),
-                          ),
-                        );
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SearchResultsScreen(
-                              category: cat['title'] as String,
-                            ),
-                          ),
-                        );
-                      }
+                      final initialId = id == 'more' ? 'electrician' : id;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AllCategoriesScreen(initialCategoryId: initialId),
+                        ),
+                      );
                     },
                     borderRadius: BorderRadius.circular(18),
                     child: Column(
@@ -1184,13 +1173,20 @@ class _HomeScreenState extends State<HomeScreen> {
         child: BottomNavigationBar(
           currentIndex: _currentNavIndex,
           onTap: (index) {
-            setState(() => _currentNavIndex = index);
-            if (index == 1) {
-              Navigator.pushNamed(context, AppRoutes.bookingsList);
+            if (index == 0) {
+              setState(() => _currentNavIndex = 0);
+            } else if (index == 1) {
+              Navigator.pushNamed(context, AppRoutes.bookingsList).then((_) {
+                if (mounted) setState(() => _currentNavIndex = 0);
+              });
             } else if (index == 2) {
-              Navigator.pushNamed(context, AppRoutes.chat);
+              Navigator.pushNamed(context, AppRoutes.chat).then((_) {
+                if (mounted) setState(() => _currentNavIndex = 0);
+              });
             } else if (index == 3) {
-              Navigator.pushNamed(context, AppRoutes.editProfile);
+              Navigator.pushNamed(context, AppRoutes.editProfile).then((_) {
+                if (mounted) setState(() => _currentNavIndex = 0);
+              });
             }
           },
           backgroundColor: Colors.white,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/services/booking_service.dart';
 import '../../payment/presentation/invoice_screen.dart';
 
 class JobCompletedScreen extends StatefulWidget {
@@ -9,6 +10,8 @@ class JobCompletedScreen extends StatefulWidget {
   final String workerRole;
   final String avatarUrl;
   final String price;
+  final String serviceName;
+  final String? subServiceName;
 
   const JobCompletedScreen({
     super.key,
@@ -17,6 +20,8 @@ class JobCompletedScreen extends StatefulWidget {
     this.avatarUrl =
         'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&fit=crop&q=80',
     this.price = 'LKR 2,000',
+    this.serviceName = 'Plumbing',
+    this.subServiceName,
   });
 
   @override
@@ -46,50 +51,131 @@ class _JobCompletedScreenState extends State<JobCompletedScreen> {
   }
 
   void _submitReview() {
+    // 1. Store completed booking in BookingService
+    BookingService.completeBooking(
+      workerName: widget.workerName,
+      workerRole: widget.workerRole,
+      avatarUrl: widget.avatarUrl,
+      price: widget.price,
+      serviceName: widget.subServiceName ?? widget.serviceName,
+      rating: _selectedRating.toDouble(),
+      reviewNote: _feedbackController.text.trim(),
+      tags: _selectedTags.toList(),
+    );
+
+    // 2. Show Celebration Pop-up
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         backgroundColor: Colors.white,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Celebration Badge
               Container(
-                width: 68,
-                height: 68,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFDCFCE7),
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
                   shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFF86EFAC), width: 2),
                 ),
-                child: const Icon(
-                  Icons.stars_rounded,
-                  color: Color(0xFF16A34A),
-                  size: 40,
+                child: const Center(
+                  child: Icon(
+                    Icons.verified_rounded,
+                    color: Color(0xFF16A34A),
+                    size: 46,
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Thank You for Your Feedback!',
+              const SizedBox(height: 18),
+
+              Text(
+                'Job Successfully Completed! 🎉',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F172A),
+                style: GoogleFonts.inter(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF0F172A),
+                  letterSpacing: -0.3,
                 ),
               ),
               const SizedBox(height: 8),
+
               Text(
-                'Your $_selectedRating-star rating has been added to ${widget.workerName}\'s profile.',
+                'Thank you! Your $_selectedRating-Star verified review and feedback have been published for ${widget.workerName}.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: GoogleFonts.inter(
                   fontSize: 13,
-                  color: Color(0xFF64748B),
+                  color: const Color(0xFF64748B),
+                  height: 1.45,
                 ),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 18),
+
+              // Completed Job Mini Summary Card
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Professional',
+                          style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
+                        ),
+                        Text(
+                          widget.workerName,
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Amount Paid',
+                          style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
+                        ),
+                        Text(
+                          widget.price,
+                          style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: Color(0xFF16A34A)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Your Rating',
+                          style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
+                        ),
+                        Row(
+                          children: List.generate(
+                            _selectedRating,
+                            (index) => const Icon(Icons.star_rounded, color: Color(0xFFD97706), size: 16),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Primary Action: Return to Home
               SizedBox(
                 width: double.infinity,
                 height: 48,
@@ -112,7 +198,36 @@ class _JobCompletedScreenState extends State<JobCompletedScreen> {
                   ),
                   child: const Text(
                     'Return to Home',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Secondary Action: View in My Bookings
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close dialog
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.bookingsList,
+                      (route) => false,
+                    );
+                  },
+                  child: const Text(
+                    'View in My Bookings',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF005AC2),
+                    ),
                   ),
                 ),
               ),
@@ -220,12 +335,16 @@ class _JobCompletedScreenState extends State<JobCompletedScreen> {
                         children: [
                           Row(
                             children: [
-                              Text(
-                                widget.workerName,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF0F172A),
+                              Flexible(
+                                child: Text(
+                                  widget.workerName,
+                                  style: const TextStyle(
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: 4),
@@ -239,6 +358,8 @@ class _JobCompletedScreenState extends State<JobCompletedScreen> {
                               fontSize: 13,
                               color: Color(0xFF64748B),
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),

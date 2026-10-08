@@ -24,6 +24,7 @@ import '../../features/booking/presentation/finding_workers_screen.dart';
 import '../../features/booking/presentation/booking_confirmed_screen.dart';
 import '../../features/booking/presentation/booking_details_screen.dart';
 import '../../features/booking/presentation/job_completed_screen.dart';
+import '../../features/booking/presentation/job_progress_screen.dart';
 
 // Payment
 import '../../features/payment/presentation/payment_screen.dart';
@@ -65,6 +66,7 @@ class AppRoutes {
   static const String chat = '/chat';
   static const String bookingDetails = '/booking-details';
   static const String jobCompleted = '/job-completed';
+  static const String jobProgress = '/job-progress';
   static const String invoice = '/invoice';
   static const String paymentHistory = '/payment-history';
   static const String editProfile = '/edit-profile';
@@ -96,6 +98,7 @@ class AppRoutes {
         liveTracking: (context) => const LiveTrackingScreen(),
         chat: (context) => const ChatScreen(),
         bookingDetails: (context) => const BookingDetailsScreen(),
+        jobProgress: (context) => const JobProgressScreen(),
         jobCompleted: (context) => const JobCompletedScreen(),
         invoice: (context) => const InvoiceScreen(),
         paymentHistory: (context) => const PaymentHistoryScreen(),

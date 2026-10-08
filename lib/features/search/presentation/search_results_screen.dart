@@ -13,6 +13,8 @@ class WorkerItem {
   final String price;
   final String avatarUrl;
   final bool isAvailable;
+  final String? reviewSnippet;
+  final List<String> skills;
 
   const WorkerItem({
     required this.name,
@@ -23,6 +25,8 @@ class WorkerItem {
     required this.price,
     required this.avatarUrl,
     this.isAvailable = true,
+    this.reviewSnippet,
+    this.skills = const [],
   });
 }
 
@@ -72,8 +76,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 156,
           distance: '0.4 km away',
           price: widget.initialPrice ?? 'LKR 1,800',
-          avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Fixed our trip switch and short circuit in 20 mins! Super polite."',
+          skills: const ['House Wiring', 'MCB Tripping', 'Solar Inverter'],
         ),
         WorkerItem(
           name: 'Kasun\nPerera',
@@ -82,8 +88,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 112,
           distance: '0.9 km away',
           price: widget.initialPrice ?? 'LKR 2,200',
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Excellent switchboard and chandelier light installation."',
+          skills: const ['Appliance Wiring', 'LED Setup'],
         ),
         WorkerItem(
           name: 'Ruwan\nJayawardena',
@@ -92,8 +100,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 84,
           distance: '1.4 km away',
           price: widget.initialPrice ?? 'LKR 2,000',
-          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&fit=crop&q=80',
           isAvailable: false,
+          reviewSnippet: '"Very neat cabling and high safety standards."',
+          skills: const ['Fuse Boxes', 'Generator Setup'],
         ),
         WorkerItem(
           name: 'Pradeep\nKumara',
@@ -102,8 +112,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 130,
           distance: '1.8 km away',
           price: widget.initialPrice ?? 'LKR 2,500',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Certified pro. Solved voltage fluctuation problems."',
+          skills: const ['Solar Setup', 'Heavy Load Wiring'],
         ),
       ];
     } else if (cat.contains('paint')) {
@@ -115,8 +127,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 140,
           distance: '0.6 km away',
           price: widget.initialPrice ?? 'LKR 3,500',
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Painted full 2-story living room with zero mess. Brilliant finish!"',
+          skills: const ['Interior Emulsion', 'Waterproofing', 'Texture Wall'],
         ),
         WorkerItem(
           name: 'Bandara\nHerath',
@@ -125,8 +139,22 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 95,
           distance: '1.1 km away',
           price: widget.initialPrice ?? 'LKR 4,000',
-          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Great exterior weather-shield painting before the rainy season."',
+          skills: const ['Exterior Coating', 'Enamel Wood Paint'],
+        ),
+        WorkerItem(
+          name: 'Lasantha\nFernando',
+          role: 'Spray & Wood Polish Pro',
+          rating: 4.7,
+          reviewsCount: 68,
+          distance: '1.6 km away',
+          price: widget.initialPrice ?? 'LKR 3,200',
+          avatarUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&fit=crop&q=80',
+          isAvailable: true,
+          reviewSnippet: '"Restored our vintage dining set and doors like brand new."',
+          skills: const ['Spray Paint', 'Teak Wood Varnish'],
         ),
       ];
     } else if (cat.contains('carpenter') || cat.contains('carpent')) {
@@ -138,8 +166,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 168,
           distance: '0.7 km away',
           price: widget.initialPrice ?? 'LKR 2,800',
-          avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Custom wardrobe repair and door alignment was done perfectly."',
+          skills: const ['Door Locks', 'Cabinet Fitting', 'Teak Furniture'],
         ),
         WorkerItem(
           name: 'Mahesh\nGamage',
@@ -148,8 +178,22 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 88,
           distance: '1.2 km away',
           price: widget.initialPrice ?? 'LKR 2,400',
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Quickly repaired jammed balcony sliding door and installed smart lock."',
+          skills: const ['Sliding Doors', 'Wood Polish'],
+        ),
+        WorkerItem(
+          name: 'Nalin\nRajapakse',
+          role: 'Modular Kitchen Specialist',
+          rating: 4.8,
+          reviewsCount: 104,
+          distance: '1.9 km away',
+          price: widget.initialPrice ?? 'LKR 3,500',
+          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&fit=crop&q=80',
+          isAvailable: true,
+          reviewSnippet: '"Fitted soft-close hinges and customized under-sink shelf."',
+          skills: const ['Modular Cabinets', 'Pantry Fitting'],
         ),
       ];
     } else if (cat.contains('ac') || cat.contains('air')) {
@@ -161,8 +205,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 185,
           distance: '0.5 km away',
           price: widget.initialPrice ?? 'LKR 3,000',
-          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Deep foam cleaning made our AC ice cold again. No water leak!"',
+          skills: const ['Inverter AC Cleaning', 'Gas Top-up', 'Leakage Fix'],
         ),
         WorkerItem(
           name: 'Rohan\nAbeysekara',
@@ -171,8 +217,22 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 110,
           distance: '1.0 km away',
           price: widget.initialPrice ?? 'LKR 3,500',
-          avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Diagnosed PCB error code in 10 mins and replaced capacitor."',
+          skills: const ['PCB Repair', 'Compressor Check'],
+        ),
+        WorkerItem(
+          name: 'Asela\nJayakody',
+          role: 'Split & Cassette AC Pro',
+          rating: 4.7,
+          reviewsCount: 72,
+          distance: '1.5 km away',
+          price: widget.initialPrice ?? 'LKR 2,800',
+          avatarUrl: 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&fit=crop&q=80',
+          isAvailable: true,
+          reviewSnippet: '"Clean indoor high-pressure water wash with zero mess on walls."',
+          skills: const ['Pressure Wash', 'Copper Piping'],
         ),
       ];
     } else if (cat.contains('mason') || cat.contains('tile')) {
@@ -184,8 +244,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 95,
           distance: '0.7 km away',
           price: widget.initialPrice ?? 'LKR 2,800',
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Replaced 12 bathroom cracked tiles with precision alignment."',
+          skills: const ['Floor Tiling', 'Plastering', 'Bathroom Renovation'],
         ),
         WorkerItem(
           name: 'Jayantha\nAlwis',
@@ -194,8 +256,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 64,
           distance: '1.3 km away',
           price: widget.initialPrice ?? 'LKR 2,200',
-          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Solid cement plastering and wall crack repair work."',
+          skills: const ['Concrete Repair', 'Boundary Wall'],
         ),
       ];
     } else if (cat.contains('weld')) {
@@ -207,8 +271,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 78,
           distance: '0.6 km away',
           price: widget.initialPrice ?? 'LKR 2,000',
-          avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Welded our broken iron gate hinge in under 30 mins."',
+          skills: const ['ARC Welding', 'Gate Repair', 'Window Grills'],
         ),
         WorkerItem(
           name: 'Lalith\nPremadasa',
@@ -217,8 +283,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 52,
           distance: '1.5 km away',
           price: widget.initialPrice ?? 'LKR 2,600',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Stainless steel staircase railing reinforcement done cleanly."',
+          skills: const ['Stainless Steel', 'Heavy Fabrication'],
         ),
       ];
     } else if (cat.contains('clean')) {
@@ -230,8 +298,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 190,
           distance: '0.4 km away',
           price: widget.initialPrice ?? 'LKR 2,500',
-          avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Kitchen deep scrub and tile shining looked like brand new!"',
+          skills: const ['Kitchen Deep Clean', 'Bathroom Sanitizing', 'Floor Polishing'],
         ),
         WorkerItem(
           name: 'Nalinda\nDias',
@@ -240,8 +310,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 145,
           distance: '0.9 km away',
           price: widget.initialPrice ?? 'LKR 3,800',
-          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Extracted tough stains from 5-seater fabric sofa."',
+          skills: const ['Sofa Extraction', 'Mattress Sterilizing'],
         ),
       ];
     } else if (cat.contains('pest')) {
@@ -253,8 +325,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 135,
           distance: '0.8 km away',
           price: widget.initialPrice ?? 'LKR 2,200',
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Safe odorless cockroach gel treatment. Haven\'t seen any bug in months."',
+          skills: const ['Cockroach Gel', 'Bedbug Eradication', 'Eco-Friendly Spray'],
         ),
         WorkerItem(
           name: 'Mohamed\nRifaz',
@@ -263,8 +337,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 88,
           distance: '1.2 km away',
           price: widget.initialPrice ?? 'LKR 4,200',
-          avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Thorough anti-termite drilling and wood protection."',
+          skills: const ['Termite Treatment', 'Mosquito Fogging'],
         ),
       ];
     } else if (cat.contains('appliance')) {
@@ -276,8 +352,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 168,
           distance: '0.5 km away',
           price: widget.initialPrice ?? 'LKR 2,500',
-          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Fixed refrigerator cooling failure and replaced thermostat fast."',
+          skills: const ['Refrigerator Repair', 'Microwave Oven', 'Induction Cooker'],
         ),
         WorkerItem(
           name: 'Priyashantha\nSilva',
@@ -286,8 +364,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 142,
           distance: '1.1 km away',
           price: widget.initialPrice ?? 'LKR 3,000',
-          avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Replaced front-load washing machine drum belt on the spot."',
+          skills: const ['Washing Machine', 'Water Heater Repair'],
         ),
       ];
     } else {
@@ -299,8 +379,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 120,
           distance: '0.5 km away',
           price: defaultPrice,
-          avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Fixed high pressure leak under kitchen sink immediately. Super clean!"',
+          skills: const ['Pipe Leakages', 'Tap & Mixer', 'Drain Unclogging'],
         ),
         WorkerItem(
           name: 'Kamal\nFernando',
@@ -309,8 +391,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 98,
           distance: '0.8 km away',
           price: 'LKR 1,800',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Installed new shower set and water pressure pump smoothly."',
+          skills: const ['Bathroom Fittings', 'Pressure Pumps'],
         ),
         WorkerItem(
           name: 'Saman\nKumara',
@@ -319,8 +403,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 75,
           distance: '1.2 km away',
           price: 'LKR 2,200',
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&fit=crop&q=80',
           isAvailable: false,
+          reviewSnippet: '"Reliable water tank cleaning and overhead line plumbing."',
+          skills: const ['Overhead Tank', 'PVC Piping'],
         ),
         WorkerItem(
           name: 'Dinesh\nFonseka',
@@ -329,8 +415,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           reviewsCount: 142,
           distance: '1.5 km away',
           price: 'LKR 2,500',
-          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&fit=crop&q=80',
           isAvailable: true,
+          reviewSnippet: '"Located hidden wall leakage without breaking extra tiles!"',
+          skills: const ['Concealed Leakages', 'Sewer Lines'],
         ),
       ];
     }
@@ -732,9 +820,70 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 12),
+                if (worker.skills.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: worker.skills.map((skill) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          skill,
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF475569),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+
+                if (worker.reviewSnippet != null) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFF1F5F9)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.format_quote_rounded,
+                          size: 14,
+                          color: Color(0xFF005AC2),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            worker.reviewSnippet!,
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontStyle: FontStyle.italic,
+                              color: const Color(0xFF64748B),
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 10),
                 const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
                 // Bottom Strip: Highlights, Price & Book Action
                 Row(

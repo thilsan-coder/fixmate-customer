@@ -839,6 +839,182 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
     );
   }
 
+  void _showOtherCustomServiceModal(CategoryItem cat) {
+    final titleController = TextEditingController();
+    final budgetController = TextEditingController(text: '2,000');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE2E8F0),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: cat.bgColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: cat.color.withValues(alpha: 0.2)),
+                      ),
+                      child: Center(
+                        child: Icon(cat.icon, color: cat.color, size: 26),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Custom ${cat.title} Request',
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Describe your special requirement to find workers',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'What work do you need done?',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: TextField(
+                    controller: titleController,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      hintText: 'e.g. Garden decorative light installation & timer switch',
+                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Estimated Budget (LKR)',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text(
+                        'LKR ',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF005AC2)),
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: budgetController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final title = titleController.text.trim().isNotEmpty
+                          ? titleController.text.trim()
+                          : 'Custom ${cat.title} Service';
+                      final budget = 'LKR ${budgetController.text.trim()}';
+
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SearchResultsScreen(
+                            category: cat.title,
+                            subService: title,
+                            initialPrice: budget,
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF005AC2),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Find Workers for Custom Request', style: TextStyle(fontWeight: FontWeight.bold)),
+                        SizedBox(width: 8),
+                        Icon(Icons.arrow_forward_rounded, size: 16),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildModalBadge(IconData icon, String label, String value) {
     return Column(
       children: [
@@ -1181,25 +1357,29 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          '${activeCategory.title} Services',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F172A),
+                        Expanded(
+                          child: Text(
+                            '${activeCategory.title} Services',
+                            style: const TextStyle(
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F172A),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const Spacer(),
+                        const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                           decoration: BoxDecoration(
                             color: activeCategory.color.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             activeCategory.bannerBadge,
                             style: TextStyle(
-                              fontSize: 10.5,
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
                               color: activeCategory.color,
                             ),
@@ -1214,6 +1394,8 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
                         fontSize: 12,
                         color: Color(0xFF64748B),
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -1227,18 +1409,23 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Select a Service (${activeCategory.subServices.length})',
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF0F172A),
+            Flexible(
+              child: Text(
+                'Select a Service (${activeCategory.subServices.length})',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
+            const SizedBox(width: 6),
             const Text(
               'Instant Booking Available',
               style: TextStyle(
-                fontSize: 11.5,
+                fontSize: 11,
                 color: Color(0xFF10B981),
                 fontWeight: FontWeight.bold,
               ),
@@ -1359,42 +1546,44 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
                           children: [
                             const Text(
                               'Starts at',
-                              style: TextStyle(fontSize: 10.5, color: Color(0xFF94A3B8)),
+                              style: TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
                             ),
                             Text(
                               sub.startingPrice,
                               style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF005AC2),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: 10),
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.timer_outlined, size: 14, color: Color(0xFF94A3B8)),
-                            const SizedBox(width: 3),
+                            const Icon(Icons.timer_outlined, size: 13, color: Color(0xFF94A3B8)),
+                            const SizedBox(width: 2),
                             Text(
                               sub.duration,
                               style: const TextStyle(
-                                fontSize: 11.5,
+                                fontSize: 11,
                                 color: Color(0xFF64748B),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 8),
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star_rounded, size: 15, color: Color(0xFFF59E0B)),
+                            const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF59E0B)),
                             const SizedBox(width: 2),
                             Text(
                               sub.rating,
                               style: const TextStyle(
-                                fontSize: 11.5,
+                                fontSize: 11,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF0F172A),
                               ),
@@ -1405,10 +1594,10 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
 
                         // "Book Pro" Button
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                           decoration: BoxDecoration(
                             color: const Color(0xFF005AC2),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
@@ -1416,13 +1605,13 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
                               Text(
                                 'Book',
                                 style: TextStyle(
-                                  fontSize: 12.5,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
                               ),
-                              SizedBox(width: 4),
-                              Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 14),
+                              SizedBox(width: 3),
+                              Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 13),
                             ],
                           ),
                         ),
@@ -1434,6 +1623,107 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
             ),
           );
         }),
+
+        const SizedBox(height: 8),
+
+        // "Other / Custom Service" Card
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0FDF4),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: const Color(0xFFBBF7D0), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: InkWell(
+            onTap: () => _showOtherCustomServiceModal(activeCategory),
+            borderRadius: BorderRadius.circular(22),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF86EFAC)),
+                    ),
+                    child: const Icon(
+                      Icons.add_task_rounded,
+                      color: Color(0xFF16A34A),
+                      size: 26,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                'Other ${activeCategory.title} Service',
+                                style: const TextStyle(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0F172A),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFDCFCE7),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'CUSTOM',
+                                style: TextStyle(fontSize: 8.5, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        const Text(
+                          'Have a different requirement? Enter your details & find pros.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF16A34A),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
       ],
     );
   }

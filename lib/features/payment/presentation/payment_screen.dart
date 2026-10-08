@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../booking/presentation/finding_workers_screen.dart';
+import '../../booking/presentation/job_completed_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
   final String workerName;
@@ -527,10 +527,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     height: 56,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => FindingWorkersScreen(
+                            builder: (context) => JobCompletedScreen(
                               workerName: widget.workerName,
                               workerRole: widget.workerRole,
                               avatarUrl: widget.avatarUrl,
