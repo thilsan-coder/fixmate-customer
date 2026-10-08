@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/widgets/fix_mate_bottom_nav.dart';
 
 class CategoryItemData {
   final String title;
@@ -27,8 +27,6 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
-  int _currentNavIndex = 0; // "Home" active tab
-
   final List<CategoryItemData> _categories = const [
     CategoryItemData(
       title: 'Electrician',
@@ -367,96 +365,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         ),
       ),
 
-      // 5. Bottom Navigation Bar
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: SafeArea(
-          top: false,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                icon: Icons.home_outlined,
-                label: 'Home',
-                index: 0,
-              ),
-              _buildNavItem(
-                icon: Icons.calendar_month_outlined,
-                label: 'Bookings',
-                index: 1,
-              ),
-              _buildNavItem(
-                icon: Icons.chat_bubble_outline_rounded,
-                label: 'Chat',
-                index: 2,
-              ),
-              _buildNavItem(
-                icon: Icons.person_outline_rounded,
-                label: 'Profile',
-                index: 3,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Bottom Navigation Bar Item Builder
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required int index,
-  }) {
-    final bool isActive = _currentNavIndex == index;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _currentNavIndex = index;
-        });
-        if (index == 0) {
-          Navigator.pushNamedAndRemoveUntil(
-              context, AppRoutes.home, (route) => false);
-        } else if (index == 1) {
-          Navigator.pushNamed(context, AppRoutes.bookingDetails);
-        } else if (index == 2) {
-          Navigator.pushNamed(context, AppRoutes.chat);
-        } else if (index == 3) {
-          Navigator.pushNamed(context, AppRoutes.editProfile);
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isActive ? AppColors.primary : const Color(0xFF64748B),
-              size: 24,
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                color: isActive ? AppColors.primary : const Color(0xFF64748B),
-                fontSize: 11,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
+      // 5. Unified Bottom Navigation Bar
+      bottomNavigationBar: const FixMateBottomNav(
+        currentIndex: -1,
       ),
     );
   }
