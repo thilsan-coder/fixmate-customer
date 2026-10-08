@@ -3,7 +3,16 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final String workerName;
+  final String workerRole;
+  final String avatarUrl;
+
+  const ChatScreen({
+    super.key,
+    this.workerName = 'Nimal Perera',
+    this.workerRole = 'Plumber',
+    this.avatarUrl = 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&fit=crop&q=80',
+  });
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -113,7 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   child: ClipOval(
                     child: Image.network(
-                      'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80',
+                      widget.avatarUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: AppColors.primaryLightest,
@@ -146,7 +155,7 @@ class _ChatScreenState extends State<ChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Nimal Perera',
+                  widget.workerName,
                   style: GoogleFonts.inter(
                     color: AppColors.textPrimary,
                     fontSize: 16,
@@ -154,7 +163,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 Text(
-                  'Online',
+                  '${widget.workerRole} • Online',
                   style: GoogleFonts.inter(
                     color: AppColors.primary,
                     fontSize: 12,

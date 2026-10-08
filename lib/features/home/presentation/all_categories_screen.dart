@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../search/presentation/search_results_screen.dart';
 
 class CategoryItem {
   final String id;
@@ -791,18 +792,14 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Row(
-                              children: [
-                                const Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 20),
-                                const SizedBox(width: 10),
-                                Expanded(child: Text('Selected: ${sub.name}')),
-                              ],
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SearchResultsScreen(
+                              category: cat.title,
+                              subService: sub.name,
+                              initialPrice: sub.startingPrice,
                             ),
-                            backgroundColor: const Color(0xFF005AC2),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           ),
                         );
                       },

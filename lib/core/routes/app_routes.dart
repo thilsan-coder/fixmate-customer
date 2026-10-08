@@ -12,6 +12,7 @@ import '../../features/auth/presentation/otp_verification_screen.dart';
 // Home & Search
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/home/presentation/categories_screen.dart';
+import '../../features/home/presentation/all_categories_screen.dart';
 import '../../features/search/presentation/search_results_screen.dart';
 
 // Workers & Booking
@@ -51,6 +52,7 @@ class AppRoutes {
   // Core App & Flow
   static const String home = '/home';
   static const String categories = '/categories';
+  static const String allCategories = '/all-categories';
   static const String bookingsList = '/bookings-list';
   static const String bookService = '/book-service';
   static const String searchResults = '/search-results';
@@ -82,6 +84,7 @@ class AppRoutes {
         // Core App & Screens
         home: (context) => const HomeScreen(),
         categories: (context) => const CategoriesScreen(),
+        allCategories: (context) => const AllCategoriesScreen(),
         bookingsList: (context) => const BookingsListScreen(),
         bookService: (context) => const BookServiceScreen(),
         searchResults: (context) => const SearchResultsScreen(),
