@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/routes/app_routes.dart';
 import '../../booking/presentation/confirm_booking_screen.dart';
 import '../../chat/presentation/chat_screen.dart';
 
@@ -637,28 +636,53 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
                 top: false,
                 child: Row(
                   children: [
-                    // Price Preview
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'Estimated',
-                          style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+                    // Price Preview with Edit/Negotiate Icon
+                    InkWell(
+                      onTap: _showNegotiatePriceDialog,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  _currentPrice != widget.price ? 'Agreed Price' : 'Estimated',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: _currentPrice != widget.price
+                                        ? const Color(0xFF16A34A)
+                                        : const Color(0xFF94A3B8),
+                                    fontWeight: _currentPrice != widget.price
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.edit_rounded,
+                                  size: 13,
+                                  color: Color(0xFF005AC2),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              _currentPrice,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF005AC2),
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          widget.price,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF005AC2),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 14),
 
-                    // Chat Outlined Button
+                    // Chat Outlined Button with Worker Details
                     Container(
                       height: 50,
                       width: 50,
@@ -670,13 +694,22 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
                       child: IconButton(
                         icon: const Icon(Icons.chat_bubble_outline_rounded, color: Color(0xFF005AC2), size: 22),
                         onPressed: () {
-                          Navigator.pushNamed(context, AppRoutes.chat);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatScreen(
+                                workerName: widget.name,
+                                workerRole: widget.role,
+                                avatarUrl: widget.avatarUrl,
+                              ),
+                            ),
+                          );
                         },
                       ),
                     ),
                     const SizedBox(width: 12),
 
-                    // Book Now Primary Button
+                    // Book Now Primary Button with Negotiated Price
                     Expanded(
                       child: SizedBox(
                         height: 50,
@@ -692,7 +725,7 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
                                   rating: widget.rating,
                                   reviewsCount: widget.reviewsCount,
                                   avatarUrl: widget.avatarUrl,
-                                  price: widget.price,
+                                  price: _currentPrice,
                                   serviceName: widget.serviceName,
                                   subServiceName: widget.subServiceName,
                                 ),

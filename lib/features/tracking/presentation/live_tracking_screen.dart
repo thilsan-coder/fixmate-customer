@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../chat/presentation/chat_screen.dart';
-import '../../booking/presentation/booking_details_screen.dart';
+import '../../booking/presentation/job_completed_screen.dart';
 
-class LiveTrackingScreen extends StatelessWidget {
+class LiveTrackingScreen extends StatefulWidget {
   final String workerName;
   final String workerRole;
   final double rating;
@@ -22,11 +23,157 @@ class LiveTrackingScreen extends StatelessWidget {
   });
 
   @override
+  State<LiveTrackingScreen> createState() => _LiveTrackingScreenState();
+}
+
+class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
+  // Current Step: 0 = On the Way, 1 = Worker Reached, 2 = Work in Progress, 3 = Work Completed
+  int _currentStep = 0;
+  int _etaMinutes = 5;
+  double _distanceKm = 0.8;
+  Timer? _countdownTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startLiveSimulation();
+  }
+
+  void _startLiveSimulation() {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 12), (timer) {
+      if (!mounted) return;
+      if (_currentStep == 0) {
+        setState(() {
+          if (_etaMinutes > 1) {
+            _etaMinutes--;
+            _distanceKm = (_distanceKm - 0.15).clamp(0.1, 2.0);
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
+
+  void _advanceToNextStep() {
+    if (_currentStep == 0) {
+      setState(() {
+        _currentStep = 1;
+        _etaMinutes = 0;
+        _distanceKm = 0.0;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('📍 ${widget.workerName} has arrived at your location!'),
+          backgroundColor: const Color(0xFF16A34A),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else if (_currentStep == 1) {
+      setState(() {
+        _currentStep = 2;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('⚙️ Work in progress started with ${widget.workerName}'),
+          backgroundColor: const Color(0xFF005AC2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else if (_currentStep == 2) {
+      setState(() {
+        _currentStep = 3;
+      });
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => JobCompletedScreen(
+            workerName: widget.workerName,
+            workerRole: widget.workerRole,
+            avatarUrl: widget.avatarUrl,
+          ),
+        ),
+      );
+    }
+  }
+
+  void _callWorker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE2E8F0),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFEFF6FF),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.phone_in_talk_rounded, color: Color(0xFF005AC2), size: 32),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Calling ${widget.workerName}...',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                '+94 77 123 4567 • Connected via FixMate Secure VoIP',
+                style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFDC2626),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: const Text('End Call', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.cardWhite,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.cardWhite,
+        backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
@@ -51,33 +198,66 @@ class LiveTrackingScreen extends StatelessWidget {
             letterSpacing: -0.3,
           ),
         ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFBFDBFE)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF10B981),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Text(
+                  'GPS LIVE',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF005AC2),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // 1. Live Map & Route Area
+            // 1. Live Interactive Map View
             Expanded(
               child: Stack(
                 children: [
                   // Map Background & Polyline Route Painter
                   Positioned.fill(
                     child: CustomPaint(
-                      painter: _LiveRouteMapPainter(),
+                      painter: _LiveRouteMapPainter(step: _currentStep),
                     ),
                   ),
 
                   // Destination Pin: "Your Home"
                   Positioned(
-                    top: 110,
-                    right: 120,
+                    top: 100,
+                    right: 110,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          width: 44,
-                          height: 44,
+                          width: 46,
+                          height: 46,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF8B3A12),
+                            color: const Color(0xFF005AC2),
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: Colors.white,
@@ -85,7 +265,7 @@ class LiveTrackingScreen extends StatelessWidget {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.15),
+                                color: Colors.black.withValues(alpha: 0.18),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -106,18 +286,18 @@ class LiveTrackingScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.08),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          child: Text(
+                          child: const Text(
                             'Your Home',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF8B3A12),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
+                            style: TextStyle(
+                              color: Color(0xFF005AC2),
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
@@ -125,109 +305,17 @@ class LiveTrackingScreen extends StatelessWidget {
                     ),
                   ),
 
-                  // Scooter / Delivery Transport Pin: "Nimal"
+                  // Worker Marker & Live ETA Speech Bubble
                   Positioned(
-                    top: 185,
-                    right: 122,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white,
-                              width: 2.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.two_wheeler_rounded,
-                            color: Colors.white,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(6),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.08),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            'Nimal',
-                            style: GoogleFonts.inter(
-                              color: AppColors.textPrimary,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Top Right Destination Marker
-                  Positioned(
-                    top: 75,
-                    right: 32,
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: Image.network(
-                          'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80',
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
-                            color: AppColors.primary,
-                            child: const Icon(Icons.person,
-                                color: Colors.white, size: 28),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Worker Location Pin (Left) with "5 min away" Tooltip Bubble
-                  Positioned(
-                    top: 145,
-                    left: 20,
+                    top: _currentStep == 0 ? 150 : 100,
+                    left: _currentStep == 0 ? 30 : 140,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Tooltip Speech Bubble
+                        // Tooltip Speech Bubble (ETA / Status)
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
+                              horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
@@ -240,22 +328,30 @@ class LiveTrackingScreen extends StatelessWidget {
                             ],
                           ),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
-                                '5 min',
-                                style: GoogleFonts.inter(
-                                  color: AppColors.primary,
-                                  fontSize: 16,
+                                _currentStep == 0
+                                    ? '$_etaMinutes mins'
+                                    : _currentStep == 1
+                                        ? 'Reached'
+                                        : 'Working',
+                                style: TextStyle(
+                                  color: _currentStep == 0
+                                      ? const Color(0xFF005AC2)
+                                      : const Color(0xFF16A34A),
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
                               Text(
-                                'away',
-                                style: GoogleFonts.inter(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
+                                _currentStep == 0
+                                    ? '${_distanceKm.toStringAsFixed(1)} km away'
+                                    : 'At Doorstep',
+                                style: const TextStyle(
+                                  color: Color(0xFF0F172A),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
@@ -263,151 +359,53 @@ class LiveTrackingScreen extends StatelessWidget {
                         ),
                         // Pointer triangle
                         CustomPaint(
-                          size: const Size(14, 8),
+                          size: const Size(12, 6),
                           painter: _TrianglePointerPainter(),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 3),
 
-                        // Worker Avatar Marker
-                        Container(
-                          width: 58,
-                          height: 58,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.18),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: Image.network(
-                              avatarUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                color: AppColors.primaryLightest,
-                                child: const Icon(Icons.person,
-                                    color: AppColors.primary, size: 30),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // 2. Worker Card (Bottom Overlay)
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.cardWhite,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: AppColors.borderLight.withValues(alpha: 0.6),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.neutral.withValues(alpha: 0.06),
-                    blurRadius: 14,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  // Worker Avatar with Small Tool Badge
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          width: 52,
-                          height: 52,
-                          color: AppColors.borderLight,
-                          child: Image.network(
-                            avatarUrl,
-                            width: 52,
-                            height: 52,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                              color: AppColors.primaryLightest,
-                              child: const Icon(Icons.person,
-                                  color: AppColors.primary, size: 26),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: -2,
-                        right: -2,
-                        child: Container(
-                          padding: const EdgeInsets.all(2.5),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFC25E1A),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white,
-                              width: 1.5,
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.build_rounded,
-                            size: 9,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 12),
-
-                  // Details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          workerName,
-                          style: GoogleFonts.inter(
-                            color: AppColors.textPrimary,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          workerRole,
-                          style: GoogleFonts.inter(
-                            color: AppColors.textSecondary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
+                        // Worker Avatar Marker with Bike Badge
+                        Stack(
+                          clipBehavior: Clip.none,
                           children: [
-                            const Icon(
-                              Icons.star_border_rounded,
-                              color: AppColors.textSecondary,
-                              size: 15,
+                            Container(
+                              width: 54,
+                              height: 54,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 3),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.18),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: Image.network(
+                                  widget.avatarUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.person, color: Color(0xFF005AC2), size: 28),
+                                ),
+                              ),
                             ),
-                            const SizedBox(width: 3),
-                            Text(
-                              '$rating ($reviewsCount)',
-                              style: GoogleFonts.inter(
-                                color: AppColors.textSecondary,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                            Positioned(
+                              bottom: -2,
+                              right: -2,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF005AC2),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white, width: 1.5),
+                                ),
+                                child: const Icon(
+                                  Icons.two_wheeler_rounded,
+                                  color: Colors.white,
+                                  size: 11,
+                                ),
                               ),
                             ),
                           ],
@@ -416,49 +414,69 @@ class LiveTrackingScreen extends StatelessWidget {
                     ),
                   ),
 
-                  // Action Buttons: Chat & Call
-                  // Chat Button
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ChatScreen(),
-                        ),
-                      );
-                    },
+                  // Floating Info Strip: Transport details & Delay/Traffic Status
+                  Positioned(
+                    top: 14,
+                    left: 16,
+                    right: 16,
                     child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFEDF4FE),
-                        shape: BoxShape.circle,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.95),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 12,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                      child: const Icon(
-                        Icons.chat_bubble_outline_rounded,
-                        color: AppColors.primary,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-
-                  // Call Button
-                  GestureDetector(
-                    onTap: () {
-                      // Call worker action
-                    },
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.phone_rounded,
-                        color: Colors.white,
-                        size: 20,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.delivery_dining_rounded, color: Color(0xFF005AC2), size: 22),
+                          const SizedBox(width: 10),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Red Honda Activa • WP-AB 4920',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                                Text(
+                                  'Low traffic • On time • No delays expected',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF16A34A),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              _currentStep == 0 ? '5 MINS' : 'REACHED',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF005AC2),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -466,60 +484,280 @@ class LiveTrackingScreen extends StatelessWidget {
               ),
             ),
 
-            // 3. Bottom Status Bar: "On the way to your location" (Clickable)
-            Material(
-              color: const Color(0xFFF1F5FB),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const BookingDetailsScreen(),
-                    ),
-                  );
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  child: Row(
+            // 2. Interactive 4-Step Progress Status Indicator
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              color: const Color(0xFFF8FAFC),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFC25E1A),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.check_rounded,
-                          color: Colors.white,
-                          size: 20,
+                      const Text(
+                        'SERVICE TIMELINE',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF64748B),
+                          letterSpacing: 0.5,
                         ),
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Text(
-                          'On the way to your location',
-                          style: GoogleFonts.inter(
-                            color: AppColors.textPrimary,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      Text(
+                        _currentStep == 0
+                            ? 'Step 1 of 3: On the Way'
+                            : _currentStep == 1
+                                ? 'Step 2 of 3: Arrived'
+                                : 'Step 3 of 3: In Progress',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF005AC2),
                         ),
-                      ),
-                      const Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        size: 14,
-                        color: AppColors.textSecondary,
                       ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      _buildStepPill(0, 'On Way', Icons.directions_bike_rounded),
+                      _buildStepConnector(0),
+                      _buildStepPill(1, 'Reached', Icons.location_on_rounded),
+                      _buildStepConnector(1),
+                      _buildStepPill(2, 'Working', Icons.build_circle_rounded),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // 3. Worker Details & Contact Controls (Bottom Overlay)
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      // Worker Avatar
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          color: const Color(0xFFEFF6FF),
+                          child: Image.network(
+                            widget.avatarUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.person, color: Color(0xFF005AC2), size: 26),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // Worker Name & Role
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.workerName,
+                              style: const TextStyle(
+                                fontSize: 15.5,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${widget.workerRole} • ⭐ ${widget.rating} (${widget.reviewsCount})',
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                color: Color(0xFF64748B),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Message Worker Button
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatScreen(
+                                workerName: widget.workerName,
+                                workerRole: widget.workerRole,
+                                avatarUrl: widget.avatarUrl,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFBFDBFE)),
+                          ),
+                          child: const Icon(
+                            Icons.chat_bubble_outline_rounded,
+                            color: Color(0xFF005AC2),
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+
+                      // Call Worker Button
+                      GestureDetector(
+                        onTap: _callWorker,
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF005AC2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.phone_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Next Step Action Button (e.g. Worker Reached -> Start Work -> Complete Work)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _advanceToNextStep,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _currentStep == 2
+                            ? const Color(0xFF16A34A)
+                            : const Color(0xFF005AC2),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _currentStep == 0
+                                ? Icons.location_on_rounded
+                                : _currentStep == 1
+                                    ? Icons.play_arrow_rounded
+                                    : Icons.check_circle_rounded,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _currentStep == 0
+                                ? 'Worker Reached / Arrived'
+                                : _currentStep == 1
+                                    ? 'Start Work'
+                                    : 'Work Completed & Write Review',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildStepPill(int stepIndex, String title, IconData icon) {
+    final isDone = _currentStep > stepIndex;
+    final isCurrent = _currentStep == stepIndex;
+
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: isCurrent
+              ? const Color(0xFFEFF6FF)
+              : isDone
+                  ? const Color(0xFFDCFCE7)
+                  : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isCurrent
+                ? const Color(0xFF005AC2)
+                : isDone
+                    ? const Color(0xFF16A34A)
+                    : const Color(0xFFE2E8F0),
+            width: isCurrent ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isDone ? Icons.check_circle_rounded : icon,
+              size: 14,
+              color: isCurrent
+                  ? const Color(0xFF005AC2)
+                  : isDone
+                      ? const Color(0xFF16A34A)
+                      : const Color(0xFF94A3B8),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isCurrent || isDone ? FontWeight.bold : FontWeight.w500,
+                color: isCurrent
+                    ? const Color(0xFF005AC2)
+                    : isDone
+                        ? const Color(0xFF16A34A)
+                        : const Color(0xFF64748B),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStepConnector(int stepIndex) {
+    final isPassed = _currentStep > stepIndex;
+    return Container(
+      width: 14,
+      height: 2,
+      margin: const EdgeInsets.symmetric(horizontal: 2),
+      color: isPassed ? const Color(0xFF16A34A) : const Color(0xFFCBD5E1),
     );
   }
 }
@@ -547,13 +785,16 @@ class _TrianglePointerPainter extends CustomPainter {
 
 /// Custom painter for the realistic map background and blue navigation polyline
 class _LiveRouteMapPainter extends CustomPainter {
+  final int step;
+
+  _LiveRouteMapPainter({this.step = 0});
+
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Light street map background
+    // 1. Street map background
     final bgPaint = Paint()..color = const Color(0xFFF1EFE9);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
 
-    // Map road network
     final minorRoad = Paint()
       ..color = Colors.white
       ..strokeWidth = 3.5
@@ -566,12 +807,10 @@ class _LiveRouteMapPainter extends CustomPainter {
 
     // Grid streets
     for (double i = 30; i < size.width; i += 40) {
-      canvas.drawLine(
-          Offset(i, 0), Offset(i + 20, size.height), minorRoad);
+      canvas.drawLine(Offset(i, 0), Offset(i + 20, size.height), minorRoad);
     }
     for (double i = 20; i < size.height; i += 45) {
-      canvas.drawLine(
-          Offset(0, i), Offset(size.width, i - 15), minorRoad);
+      canvas.drawLine(Offset(0, i), Offset(size.width, i - 15), minorRoad);
     }
 
     // Arteries
@@ -582,44 +821,37 @@ class _LiveRouteMapPainter extends CustomPainter {
     canvas.drawLine(Offset(0, size.height * 0.7),
         Offset(size.width * 0.8, 0), majorRoad);
 
-    // 2. Thick Vibrant Blue Navigation Polyline Route
+    // 2. Thick Navigation Polyline Route
     final routePaint = Paint()
-      ..color = const Color(0xFF1E6BEB)
-      ..strokeWidth = 6.5
+      ..color = step > 0 ? const Color(0xFF16A34A) : const Color(0xFF005AC2)
+      ..strokeWidth = 6.0
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
-    // Outer glow for route
     final glowPaint = Paint()
-      ..color = const Color(0xFF1E6BEB).withValues(alpha: 0.3)
+      ..color = (step > 0 ? const Color(0xFF16A34A) : const Color(0xFF005AC2))
+          .withValues(alpha: 0.25)
       ..strokeWidth = 11
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
     final routePath = Path();
-    final p0 = Offset(size.width * 0.22, size.height * 0.48);
-    final p1 = Offset(size.width * 0.48, size.height * 0.53);
-    final p2 = Offset(size.width * 0.58, size.height * 0.55);
-    final p3 = Offset(size.width * 0.88, size.height * 0.16);
+    final p0 = Offset(size.width * 0.18, size.height * 0.50);
+    final p1 = Offset(size.width * 0.45, size.height * 0.52);
+    final p2 = Offset(size.width * 0.55, size.height * 0.54);
+    final p3 = Offset(size.width * 0.74, size.height * 0.22);
 
     routePath.moveTo(p0.dx, p0.dy);
     routePath.lineTo(p1.dx, p1.dy);
     routePath.lineTo(p2.dx, p2.dy);
     routePath.lineTo(p3.dx, p3.dy);
 
-    // Minor side branch route
-    final branchPath = Path();
-    branchPath.moveTo(size.width * 0.31, size.height * 0.53);
-    branchPath.lineTo(p1.dx, p1.dy);
-    branchPath.lineTo(size.width * 0.62, size.height * 0.41);
-
     canvas.drawPath(routePath, glowPaint);
     canvas.drawPath(routePath, routePaint);
-    canvas.drawPath(branchPath, routePaint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
