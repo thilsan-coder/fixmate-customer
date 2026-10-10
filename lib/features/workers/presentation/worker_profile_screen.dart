@@ -141,7 +141,12 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
                           ),
                           decoration: const InputDecoration(
                             hintText: 'e.g. 2500',
+                            filled: false,
                             border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            errorBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
                           ),
                         ),
                       ),

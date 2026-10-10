@@ -246,40 +246,50 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildInputField(String label, IconData icon, TextEditingController controller, {TextInputType keyboardType = TextInputType.text}) {
+  Widget _buildInputField(
+    String label,
+    IconData icon,
+    TextEditingController controller, {
+    TextInputType keyboardType = TextInputType.text,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+          style: GoogleFonts.inter(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF475569),
+          ),
         ),
         const SizedBox(height: 6),
-        Container(
-          height: 48,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          style: GoogleFonts.inter(
+            fontSize: 14.5,
+            color: const Color(0xFF0F172A),
+            fontWeight: FontWeight.w500,
           ),
-          child: Row(
-            children: [
-              Icon(icon, color: const Color(0xFF005AC2), size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  keyboardType: keyboardType,
-                  style: const TextStyle(fontSize: 14, color: Color(0xFF0F172A), fontWeight: FontWeight.w500),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              ),
-            ],
+          decoration: InputDecoration(
+            isDense: true,
+            filled: true,
+            fillColor: const Color(0xFFF8FAFC),
+            prefixIcon: Icon(icon, color: const Color(0xFF005AC2), size: 20),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFF005AC2), width: 1.5),
+            ),
           ),
         ),
       ],
@@ -550,7 +560,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     ),
                                     decoration: const InputDecoration(
                                       hintText: 'Enter amount',
+                                      filled: false,
                                       border: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      errorBorder: InputBorder.none,
+                                      disabledBorder: InputBorder.none,
                                       hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 16),
                                     ),
                                     onChanged: (val) {

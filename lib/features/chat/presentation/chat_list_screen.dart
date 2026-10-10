@@ -195,7 +195,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
                             },
                           )
                         : null,
+                    filled: false,
                     border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
