@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_assets.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/services/session_manager.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -159,8 +160,11 @@ class OnboardingScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 52,
                 child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, AppRoutes.login);
+                  onPressed: () async {
+                    await SessionManager.setCompletedOnboarding(true);
+                    if (context.mounted) {
+                      Navigator.pushNamed(context, AppRoutes.login);
+                    }
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF005AC2),

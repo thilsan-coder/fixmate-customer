@@ -42,11 +42,17 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     if (!mounted) return;
 
     final loggedIn = await SessionManager.isLoggedIn();
+    final hasCompletedOnboarding = await SessionManager.hasCompletedOnboarding();
     if (!mounted) return;
 
     if (loggedIn) {
+      // 1. User is already logged in -> Go straight to Home
       Navigator.pushReplacementNamed(context, AppRoutes.home);
+    } else if (hasCompletedOnboarding) {
+      // 2. Returning or logged-out user -> Go to Login (skips onboarding, country, language, register)
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
     } else {
+      // 3. New user / First time install -> Start onboarding flow
       Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
     }
   }

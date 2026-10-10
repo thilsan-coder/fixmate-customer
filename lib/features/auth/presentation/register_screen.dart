@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_assets.dart';
 import '../../../core/constants/country_data.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/services/session_manager.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -376,13 +377,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        AppRoutes.login,
-                        (route) => false,
-                      );
+                    onPressed: () async {
+                      await SessionManager.setCompletedOnboarding(true);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          AppRoutes.login,
+                          (route) => false,
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF0047AB),
@@ -933,7 +937,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.login),
+                    onTap: () async {
+                      await SessionManager.setCompletedOnboarding(true);
+                      if (context.mounted) {
+                        Navigator.pushNamed(context, AppRoutes.login);
+                      }
+                    },
                     child: const Text(
                       'Login',
                       style: TextStyle(
