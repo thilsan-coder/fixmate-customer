@@ -544,30 +544,31 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Row(
+                                      Wrap(
+                                        crossAxisAlignment: WrapCrossAlignment.center,
+                                        spacing: 6,
+                                        runSpacing: 3,
                                         children: [
                                           const Text(
                                             'Pay After Complete',
                                             style: TextStyle(
-                                              fontSize: 14.5,
+                                              fontSize: 14,
                                               fontWeight: FontWeight.bold,
                                               color: Color(0xFF0F172A),
                                             ),
                                           ),
-                                          const SizedBox(width: 8),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                                             decoration: BoxDecoration(
                                               color: const Color(0xFFDCFCE7),
-                                              borderRadius: BorderRadius.circular(6),
+                                              borderRadius: BorderRadius.circular(5),
                                             ),
                                             child: const Text(
                                               '⭐ RECOMMENDED',
                                               style: TextStyle(
-                                                fontSize: 9,
+                                                fontSize: 8.5,
                                                 fontWeight: FontWeight.w800,
                                                 color: Color(0xFF15803D),
-                                                letterSpacing: 0.3,
                                               ),
                                             ),
                                           ),
@@ -614,9 +615,13 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                                       style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
                                     ),
                                     Spacer(),
-                                    Text(
-                                      'Zero Advance Required',
-                                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF64748B)),
+                                    Flexible(
+                                      child: Text(
+                                        'Zero Advance Required',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF64748B)),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -676,17 +681,19 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
+                                  Wrap(
+                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    spacing: 6,
+                                    runSpacing: 3,
                                     children: [
                                       const Text(
                                         'Credit / Debit Card',
                                         style: TextStyle(
-                                          fontSize: 14.5,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.bold,
                                           color: Color(0xFF0F172A),
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                                         decoration: BoxDecoration(
@@ -696,7 +703,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                                         child: const Text(
                                           'VISA/MC',
                                           style: TextStyle(
-                                            fontSize: 9,
+                                            fontSize: 8.5,
                                             fontWeight: FontWeight.w800,
                                             color: Color(0xFF1E40AF),
                                           ),
@@ -778,17 +785,19 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
+                                  Wrap(
+                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    spacing: 6,
+                                    runSpacing: 3,
                                     children: [
                                       const Text(
                                         'FixMate Wallet',
                                         style: TextStyle(
-                                          fontSize: 14.5,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.bold,
                                           color: Color(0xFF0F172A),
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                                         decoration: BoxDecoration(
@@ -798,7 +807,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                                         child: const Text(
                                           '1-TAP PAY',
                                           style: TextStyle(
-                                            fontSize: 9,
+                                            fontSize: 8.5,
                                             fontWeight: FontWeight.w800,
                                             color: Color(0xFF6B21A8),
                                           ),
@@ -937,16 +946,21 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        _selectedPaymentMethod == 0
-                            ? 'Confirm Booking (Pay Later)'
-                            : _selectedPaymentMethod == 1
-                                ? 'Pay ${widget.price} & Book'
-                                : 'Book with Wallet',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: -0.2,
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            _selectedPaymentMethod == 0
+                                ? 'Confirm Booking (Pay Later)'
+                                : _selectedPaymentMethod == 1
+                                    ? 'Pay ${widget.price} & Book'
+                                    : 'Book with Wallet',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),

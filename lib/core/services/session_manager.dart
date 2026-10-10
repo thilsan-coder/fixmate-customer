@@ -1,8 +1,8 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SessionManager {
-  static const String _keyIsLoggedIn = 'fixmate_is_logged_in';
-  static const String _keyCompletedOnboarding = 'fixmate_has_completed_onboarding';
+  static const String _keyIsLoggedIn = 'fixmate_is_logged_in_v2';
+  static const String _keyCompletedOnboarding = 'fixmate_has_completed_onboarding_v2';
   static const String _keyHasRegistered = 'fixmate_has_registered_v2';
   static const String _keyUserPhone = 'fixmate_user_phone';
   static const String _keyUserName = 'fixmate_user_name';
