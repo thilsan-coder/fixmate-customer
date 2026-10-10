@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -30,6 +31,10 @@ class FindingWorkersScreen extends StatefulWidget {
 class _FindingWorkersScreenState extends State<FindingWorkersScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _radarController;
+  int _foundCount = 0;
+  String _statusTitle = 'Scanning for nearby workers...';
+  String _statusSubtitle = 'Searching in 3 km radius around Colombo 03';
+  final List<Timer> _timers = [];
 
   @override
   void initState() {
@@ -39,8 +44,30 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
       duration: const Duration(seconds: 3),
     )..repeat();
 
-    // Simulate finding worker and transition after 3.5 seconds
-    Future.delayed(const Duration(milliseconds: 3500), () {
+    // Step 1: Detect first 2 workers after 1.1 seconds
+    _timers.add(Timer(const Duration(milliseconds: 1100), () {
+      if (mounted) {
+        setState(() {
+          _foundCount = 2;
+          _statusTitle = 'Found 2 online workers nearby...';
+          _statusSubtitle = 'Connecting to nearby active networks';
+        });
+      }
+    }));
+
+    // Step 2: Detect all 4 workers after 2.2 seconds
+    _timers.add(Timer(const Duration(milliseconds: 2200), () {
+      if (mounted) {
+        setState(() {
+          _foundCount = 4;
+          _statusTitle = 'Found 4 verified workers nearby!';
+          _statusSubtitle = 'Preparing best matches and distance ratings...';
+        });
+      }
+    }));
+
+    // Step 3: Transition to the worker selection screen after 3.4 seconds
+    _timers.add(Timer(const Duration(milliseconds: 3400), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -56,11 +83,14 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
           ),
         );
       }
-    });
+    }));
   }
 
   @override
   void dispose() {
+    for (final timer in _timers) {
+      timer.cancel();
+    }
     _radarController.dispose();
     super.dispose();
   }
@@ -96,13 +126,36 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
         ),
         centerTitle: false,
         actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.more_vert,
-              color: AppColors.primary,
-              size: 24,
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: const Color(0xFFDCFCE7),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFF86EFAC)),
             ),
-            onPressed: () {},
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF16A34A),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  _foundCount > 0 ? '$_foundCount Online' : 'Scanning',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF15803D),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -152,7 +205,7 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
                         },
                       ),
 
-                      // Center Glowing Pin with Tool Icon
+                      // Center User Location Pin
                       Container(
                         width: 58,
                         height: 58,
@@ -170,49 +223,124 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
                         ),
                         child: const Center(
                           child: Icon(
-                            Icons.build_rounded,
+                            Icons.person_pin_circle_rounded,
                             color: Colors.white,
-                            size: 24,
+                            size: 28,
                           ),
                         ),
                       ),
+
+                      // Pin 1 (Detected worker 1 - 0.5km)
+                      if (_foundCount >= 1)
+                        Positioned(
+                          top: 55,
+                          right: 65,
+                          child: _buildWorkerRadarPin('1', '0.5km', true),
+                        ),
+
+                      // Pin 2 (Detected worker 2 - 0.8km)
+                      if (_foundCount >= 2)
+                        Positioned(
+                          bottom: 50,
+                          left: 60,
+                          child: _buildWorkerRadarPin('2', '0.8km', false),
+                        ),
+
+                      // Pin 3 (Detected worker 3 - 1.2km)
+                      if (_foundCount >= 3)
+                        Positioned(
+                          top: 70,
+                          left: 45,
+                          child: _buildWorkerRadarPin('3', '1.2km', false),
+                        ),
+
+                      // Pin 4 (Detected worker 4 - 1.8km)
+                      if (_foundCount >= 4)
+                        Positioned(
+                          bottom: 60,
+                          right: 50,
+                          child: _buildWorkerRadarPin('4', '1.8km', false),
+                        ),
                     ],
                   ),
                 ),
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
+
+              // Live Counter Badge
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: _foundCount > 0 ? const Color(0xFFEFF6FF) : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: _foundCount > 0 ? const Color(0xFF93C5FD) : const Color(0xFFCBD5E1),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _foundCount > 0 ? Icons.check_circle_rounded : Icons.radar_rounded,
+                      size: 16,
+                      color: _foundCount > 0 ? const Color(0xFF005AC2) : const Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 7),
+                    Text(
+                      _foundCount > 0
+                          ? '$_foundCount Workers Online in 3 km Radius'
+                          : 'Searching for nearby workers...',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: _foundCount > 0 ? const Color(0xFF005AC2) : const Color(0xFF475569),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 18),
 
               // 2. Main Status Text
-              Text(
-                'Finding the best\nworkers for you...',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  color: AppColors.textPrimary,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  height: 1.25,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'We are notifying nearby professionals\nabout your ${widget.serviceName.toLowerCase()} request.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  height: 1.45,
-                  fontWeight: FontWeight.w400,
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Column(
+                  key: ValueKey(_statusTitle),
+                  children: [
+                    Text(
+                      _statusTitle,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        color: AppColors.textPrimary,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        height: 1.25,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _statusSubtitle,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        color: AppColors.textSecondary,
+                        fontSize: 13.5,
+                        height: 1.4,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
               // 3. Service Request Summary Card
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: AppColors.cardWhite,
                   borderRadius: BorderRadius.circular(18),
@@ -229,10 +357,9 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
                 ),
                 child: Row(
                   children: [
-                    // Icon Box
                     Container(
-                      width: 52,
-                      height: 52,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
                         color: const Color(0xFFBACFFB),
                         borderRadius: BorderRadius.circular(14),
@@ -240,18 +367,16 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
                       child: const Icon(
                         Icons.handyman_rounded,
                         color: Color(0xFF1E3A8A),
-                        size: 24,
+                        size: 22,
                       ),
                     ),
                     const SizedBox(width: 14),
-
-                    // Service Name & Label
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'SERVICE REQUEST',
+                            'REQUESTED SERVICE',
                             style: GoogleFonts.inter(
                               color: AppColors.textSecondary,
                               fontSize: 10,
@@ -259,20 +384,18 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
                               letterSpacing: 0.6,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 3),
                           Text(
                             '${widget.serviceName} Service',
                             style: GoogleFonts.inter(
                               color: AppColors.textPrimary,
-                              fontSize: 16,
+                              fontSize: 15,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],
                       ),
                     ),
-
-                    // Estimated Price
                     Text(
                       'EST. ${widget.price}',
                       style: GoogleFonts.inter(
@@ -286,16 +409,15 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              // 4. Bottom Metrics Cards Row (Radius & Notifying)
+              // 4. Bottom Metrics Cards Row
               Row(
                 children: [
                   // Radius Metric Card
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF1F5FB),
                         borderRadius: BorderRadius.circular(16),
@@ -308,24 +430,24 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
                           const Icon(
                             Icons.location_on_outlined,
                             color: AppColors.primary,
-                            size: 24,
+                            size: 22,
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           Text(
-                            'RADIUS',
+                            'SEARCH RADIUS',
                             style: GoogleFonts.inter(
                               color: AppColors.textSecondary,
-                              fontSize: 11,
+                              fontSize: 10.5,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.5,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 3),
                           Text(
-                            '5 Miles',
+                            '3.0 km',
                             style: GoogleFonts.inter(
                               color: AppColors.textPrimary,
-                              fontSize: 16,
+                              fontSize: 15,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -333,13 +455,12 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
                       ),
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 12),
 
-                  // Notifying Metric Card
+                  // Found Workers Metric Card
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF1F5FB),
                         borderRadius: BorderRadius.circular(16),
@@ -351,25 +472,25 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
                         children: [
                           const Icon(
                             Icons.people_alt_outlined,
-                            color: AppColors.primary,
-                            size: 24,
+                            color: Color(0xFF16A34A),
+                            size: 22,
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           Text(
-                            'NOTIFYING',
+                            'WORKERS ONLINE',
                             style: GoogleFonts.inter(
                               color: AppColors.textSecondary,
-                              fontSize: 11,
+                              fontSize: 10.5,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.5,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 3),
                           Text(
-                            '12 Pros',
+                            _foundCount > 0 ? '$_foundCount Active' : 'Scanning...',
                             style: GoogleFonts.inter(
-                              color: AppColors.textPrimary,
-                              fontSize: 16,
+                              color: _foundCount > 0 ? const Color(0xFF16A34A) : AppColors.textPrimary,
+                              fontSize: 15,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -386,13 +507,44 @@ class _FindingWorkersScreenState extends State<FindingWorkersScreen>
       ),
     );
   }
+
+  Widget _buildWorkerRadarPin(String number, String dist, bool isBest) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: isBest ? const Color(0xFF16A34A) : const Color(0xFF005AC2),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: (isBest ? const Color(0xFF16A34A) : const Color(0xFF005AC2)).withValues(alpha: 0.4),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.handyman_rounded, color: Colors.white, size: 11),
+          const SizedBox(width: 3),
+          Text(
+            dist,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Custom painter to draw light grayscale map street lines texture
 class _MapGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // Light map background
     final bgPaint = Paint()..color = const Color(0xFFE5E9EE);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
 
@@ -406,7 +558,6 @@ class _MapGridPainter extends CustomPainter {
       ..strokeWidth = 6
       ..style = PaintingStyle.stroke;
 
-    // Secondary grid roads
     for (double x = 20; x < size.width; x += 26) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), roadPaint);
     }
@@ -414,23 +565,17 @@ class _MapGridPainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), roadPaint);
     }
 
-    // Main arteries (Horizontal & Vertical crossroad through center)
     final centerX = size.width / 2;
     final centerY = size.height / 2;
-    canvas.drawLine(
-        Offset(0, centerY), Offset(size.width, centerY), mainRoadPaint);
-    canvas.drawLine(
-        Offset(centerX, 0), Offset(centerX, size.height), mainRoadPaint);
+    canvas.drawLine(Offset(0, centerY), Offset(size.width, centerY), mainRoadPaint);
+    canvas.drawLine(Offset(centerX, 0), Offset(centerX, size.height), mainRoadPaint);
 
-    // Diagonal subtle roads
     final diagPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.5)
       ..strokeWidth = 4
       ..style = PaintingStyle.stroke;
-    canvas.drawLine(
-        Offset(0, size.height * 0.2), Offset(size.width * 0.8, 0), diagPaint);
-    canvas.drawLine(Offset(size.width * 0.2, size.height),
-        Offset(size.width, size.height * 0.3), diagPaint);
+    canvas.drawLine(Offset(0, size.height * 0.2), Offset(size.width * 0.8, 0), diagPaint);
+    canvas.drawLine(Offset(size.width * 0.2, size.height), Offset(size.width, size.height * 0.3), diagPaint);
   }
 
   @override
@@ -448,19 +593,16 @@ class _RadarWavesPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final maxRadius = math.min(size.width, size.height) * 0.52;
 
-    // 3 Concentric wave rings
     for (int i = 0; i < 3; i++) {
       final waveProgress = (progress + (i / 3.0)) % 1.0;
       final radius = 24.0 + waveProgress * (maxRadius - 24.0);
       final opacity = (1.0 - waveProgress) * 0.35;
 
-      // Outer wave fill
       final fillPaint = Paint()
         ..color = const Color(0xFF0052CC).withValues(alpha: opacity * 0.2)
         ..style = PaintingStyle.fill;
       canvas.drawCircle(center, radius, fillPaint);
 
-      // Outer wave stroke
       final strokePaint = Paint()
         ..color = const Color(0xFF0052CC).withValues(alpha: opacity)
         ..style = PaintingStyle.stroke
