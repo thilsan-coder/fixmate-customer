@@ -48,9 +48,13 @@ class SearchResultsScreen extends StatefulWidget {
 
 class _SearchResultsScreenState extends State<SearchResultsScreen> {
   late final TextEditingController _searchController;
-  int _selectedFilterIndex = 0; // 0: Distance, 1: Rating, 2: Price
+
+  String _selectedDistanceFilter = 'All';
+  String _selectedRatingFilter = 'All';
+  String _selectedPriceFilter = 'All';
 
   final List<String> _filters = ['Distance', 'Rating', 'Price'];
+  late List<WorkerItem> _allWorkers;
   late List<WorkerItem> _workers;
 
   @override
@@ -60,6 +64,18 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       text: widget.subService ?? widget.category,
     );
     _initWorkers();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    _applyFilters();
   }
 
   void _initWorkers() {
@@ -421,6 +437,764 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
         ),
       ];
     }
+    _allWorkers = List.from(_workers);
+  }
+
+  double _parseDistance(String dist) {
+    final match = RegExp(r'([0-9]+(?:\.[0-9]+)?)').firstMatch(dist);
+    if (match != null) {
+      return double.tryParse(match.group(1)!) ?? 999.0;
+    }
+    return 999.0;
+  }
+
+  int _parsePrice(String price) {
+    final clean = price.replaceAll(RegExp(r'[^0-9]'), '');
+    return int.tryParse(clean) ?? 0;
+  }
+
+  void _applyFilters() {
+    final query = _searchController.text.trim().toLowerCase();
+    final cat = widget.category.toLowerCase();
+    final sub = widget.subService?.toLowerCase() ?? '';
+
+    // If query is empty or just matches the screen category / subService, don't filter out by query
+    final isCategoryQuery = query.isEmpty ||
+        query == cat ||
+        (sub.isNotEmpty && query == sub) ||
+        cat.contains(query) ||
+        query.contains(cat);
+
+    List<WorkerItem> list = _allWorkers.where((w) {
+      if (!isCategoryQuery) {
+        final workerText =
+            '${w.name} ${w.role} ${w.skills.join(" ")} ${w.reviewSnippet ?? ""} $cat $sub'
+                .toLowerCase();
+        final queryWords = query
+            .split(RegExp(r'\s+'))
+            .where((s) => s.isNotEmpty)
+            .toList();
+
+        final matchesQuery = queryWords.every((word) {
+          final stem =
+              word.length > 4 ? word.substring(0, word.length - 3) : word;
+          return workerText.contains(word) || workerText.contains(stem);
+        });
+        if (!matchesQuery) return false;
+      }
+
+      // Distance filter
+      if (_selectedDistanceFilter == '< 1 km') {
+        if (_parseDistance(w.distance) > 1.0) return false;
+      } else if (_selectedDistanceFilter == '< 2 km') {
+        if (_parseDistance(w.distance) > 2.0) return false;
+      }
+
+      // Rating filter
+      if (_selectedRatingFilter == '4.8+') {
+        if (w.rating < 4.8) return false;
+      } else if (_selectedRatingFilter == '4.7+') {
+        if (w.rating < 4.7) return false;
+      }
+
+      // Price filter
+      if (_selectedPriceFilter == '< LKR 2,500') {
+        if (_parsePrice(w.price) > 2500) return false;
+      } else if (_selectedPriceFilter == '< LKR 3,000') {
+        if (_parsePrice(w.price) > 3000) return false;
+      }
+
+      return true;
+    }).toList();
+
+    // Sorting
+    if (_selectedDistanceFilter == 'Nearest') {
+      list.sort((a, b) =>
+          _parseDistance(a.distance).compareTo(_parseDistance(b.distance)));
+    } else if (_selectedRatingFilter == 'Top Rated') {
+      list.sort((a, b) => b.rating.compareTo(a.rating));
+    } else if (_selectedPriceFilter == 'Low to High') {
+      list.sort((a, b) => _parsePrice(a.price).compareTo(_parsePrice(b.price)));
+    } else if (_selectedPriceFilter == 'High to Low') {
+      list.sort((a, b) => _parsePrice(b.price).compareTo(_parsePrice(a.price)));
+    }
+
+    setState(() {
+      _workers = list;
+    });
+  }
+
+  void _resetAllFilters() {
+    setState(() {
+      _selectedDistanceFilter = 'All';
+      _selectedRatingFilter = 'All';
+      _selectedPriceFilter = 'All';
+    });
+    _applyFilters();
+  }
+
+  void _showDistanceFilterSheet() {
+    final options = [
+      {'key': 'All', 'label': 'All Distances', 'desc': 'Show all verified pros nearby'},
+      {'key': 'Nearest', 'label': 'Nearest First', 'desc': 'Sort by closest distance to you'},
+      {'key': '< 1 km', 'label': 'Under 1.0 km', 'desc': 'Walking distance & fastest arrival'},
+      {'key': '< 2 km', 'label': 'Under 2.0 km', 'desc': 'Within local neighborhood radius'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      builder: (sheetContext) {
+        String tempSelection = _selectedDistanceFilter;
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return SafeArea(
+              child: Material(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Handle
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Header
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.near_me_rounded,
+                              color: Color(0xFF005AC2),
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Distance & Proximity',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                Text(
+                                  'Filter or sort pros by arrival distance',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                      const SizedBox(height: 10),
+
+                      // Option tiles
+                      ...options.map((opt) {
+                        final isSelected = tempSelection == opt['key'];
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(14),
+                          onTap: () {
+                            setModalState(() {
+                              tempSelection = opt['key']!;
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isSelected ? const Color(0xFF005AC2) : const Color(0xFFE2E8F0),
+                                width: isSelected ? 1.5 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                  color: isSelected ? const Color(0xFF005AC2) : const Color(0xFF94A3B8),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        opt['label']!,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                          color: isSelected ? const Color(0xFF005AC2) : const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        opt['desc']!,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11.5,
+                                          color: const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+
+                      const SizedBox(height: 14),
+
+                      // Action buttons
+                      Row(
+                        children: [
+                          if (tempSelection != 'All')
+                            Expanded(
+                              flex: 1,
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  setState(() {
+                                    _selectedDistanceFilter = 'All';
+                                  });
+                                  _applyFilters();
+                                },
+                                child: Text(
+                                  'Clear',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (tempSelection != 'All') const SizedBox(width: 10),
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF005AC2),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                elevation: 0,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                setState(() {
+                                  _selectedDistanceFilter = tempSelection;
+                                });
+                                _applyFilters();
+                              },
+                              child: Text(
+                                'Apply Filter',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showRatingFilterSheet() {
+    final options = [
+      {'key': 'All', 'label': 'All Ratings', 'desc': 'Show all rated service specialists'},
+      {'key': 'Top Rated', 'label': 'Top Rated First', 'desc': 'Sort by highest star ratings & reviews'},
+      {'key': '4.8+', 'label': '4.8 ★ & Above', 'desc': 'Top tier certified master pros only'},
+      {'key': '4.7+', 'label': '4.7 ★ & Above', 'desc': 'Highly recommended by satisfied customers'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      builder: (sheetContext) {
+        String tempSelection = _selectedRatingFilter;
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return SafeArea(
+              child: Material(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Handle
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Header
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF3C7),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.star_rounded,
+                              color: Color(0xFFD97706),
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Ratings & Reviews',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                Text(
+                                  'Filter by verified customer satisfaction',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                      const SizedBox(height: 10),
+
+                      // Option tiles
+                      ...options.map((opt) {
+                        final isSelected = tempSelection == opt['key'];
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(14),
+                          onTap: () {
+                            setModalState(() {
+                              tempSelection = opt['key']!;
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected ? const Color(0xFFFFFBEB) : Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isSelected ? const Color(0xFFD97706) : const Color(0xFFE2E8F0),
+                                width: isSelected ? 1.5 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                  color: isSelected ? const Color(0xFFD97706) : const Color(0xFF94A3B8),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        opt['label']!,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                          color: isSelected ? const Color(0xFF92400E) : const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        opt['desc']!,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11.5,
+                                          color: const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+
+                      const SizedBox(height: 14),
+
+                      // Action buttons
+                      Row(
+                        children: [
+                          if (tempSelection != 'All')
+                            Expanded(
+                              flex: 1,
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  setState(() {
+                                    _selectedRatingFilter = 'All';
+                                  });
+                                  _applyFilters();
+                                },
+                                child: Text(
+                                  'Clear',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (tempSelection != 'All') const SizedBox(width: 10),
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF005AC2),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                elevation: 0,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                setState(() {
+                                  _selectedRatingFilter = tempSelection;
+                                });
+                                _applyFilters();
+                              },
+                              child: Text(
+                                'Apply Filter',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showPriceFilterSheet() {
+    final options = [
+      {'key': 'All', 'label': 'All Price Ranges', 'desc': 'Show all standard service pricing tiers'},
+      {'key': 'Low to High', 'label': 'Price: Low to High', 'desc': 'Most budget-friendly starting rates'},
+      {'key': 'High to Low', 'label': 'Price: High to Low', 'desc': 'Premium and master tier services'},
+      {'key': '< LKR 2,500', 'label': 'Under LKR 2,500', 'desc': 'Affordable inspections & minor fixes'},
+      {'key': '< LKR 3,000', 'label': 'Under LKR 3,000', 'desc': 'Standard repairs & installations'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      builder: (sheetContext) {
+        String tempSelection = _selectedPriceFilter;
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return SafeArea(
+              child: Material(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Handle
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Header
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0FDF4),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.payments_rounded,
+                              color: Color(0xFF16A34A),
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Price & Budget',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                Text(
+                                  'Sort and filter by starting inspection prices',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                      const SizedBox(height: 10),
+
+                      // Option tiles
+                      ...options.map((opt) {
+                        final isSelected = tempSelection == opt['key'];
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(14),
+                          onTap: () {
+                            setModalState(() {
+                              tempSelection = opt['key']!;
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected ? const Color(0xFFF0FDF4) : Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isSelected ? const Color(0xFF16A34A) : const Color(0xFFE2E8F0),
+                                width: isSelected ? 1.5 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                  color: isSelected ? const Color(0xFF16A34A) : const Color(0xFF94A3B8),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        opt['label']!,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                          color: isSelected ? const Color(0xFF166534) : const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        opt['desc']!,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11.5,
+                                          color: const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+
+                      const SizedBox(height: 14),
+
+                      // Action buttons
+                      Row(
+                        children: [
+                          if (tempSelection != 'All')
+                            Expanded(
+                              flex: 1,
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  setState(() {
+                                    _selectedPriceFilter = 'All';
+                                  });
+                                  _applyFilters();
+                                },
+                                child: Text(
+                                  'Clear',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (tempSelection != 'All') const SizedBox(width: 10),
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF005AC2),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                elevation: 0,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                setState(() {
+                                  _selectedPriceFilter = tempSelection;
+                                });
+                                _applyFilters();
+                              },
+                              child: Text(
+                                'Apply Filter',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -474,51 +1248,60 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                 children: [
                   // 1. Search Bar with Clear Button
                   Container(
-                    height: 52,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    height: 50,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEFF2F7),
-                      borderRadius: BorderRadius.circular(18),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    child: Row(
-                      children: [
-                        const Icon(
+                    child: TextField(
+                      controller: _searchController,
+                      style: GoogleFonts.inter(
+                        fontSize: 14.5,
+                        color: const Color(0xFF0F172A),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlignVertical: TextAlignVertical.center,
+                      decoration: InputDecoration(
+                        filled: false,
+                        fillColor: Colors.transparent,
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                        prefixIcon: const Icon(
                           Icons.search_rounded,
                           color: Color(0xFF64748B),
                           size: 22,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              color: const Color(0xFF0F172A),
-                              fontWeight: FontWeight.w500,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Search for services...',
-                              hintStyle: GoogleFonts.inter(
-                                color: const Color(0xFF94A3B8),
-                                fontSize: 14,
-                              ),
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                          ),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(
+                                  Icons.cancel_rounded,
+                                  color: Color(0xFF94A3B8),
+                                  size: 18,
+                                ),
+                                onPressed: () {
+                                  _searchController.clear();
+                                },
+                              )
+                            : null,
+                        hintText: 'Search services or pros...',
+                        hintStyle: GoogleFonts.inter(
+                          color: const Color(0xFF94A3B8),
+                          fontSize: 14,
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            _searchController.clear();
-                          },
-                          child: const Icon(
-                            Icons.close_rounded,
-                            color: Color(0xFF64748B),
-                            size: 20,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
 
@@ -533,36 +1316,62 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                       separatorBuilder: (context, index) =>
                           const SizedBox(width: 10),
                       itemBuilder: (context, index) {
-                        final filterName = _filters[index];
-                        final isSelected = _selectedFilterIndex == index;
+                        String filterLabel = _filters[index];
+                        bool isFilterActive = false;
+
+                        if (index == 0) {
+                          isFilterActive = _selectedDistanceFilter != 'All';
+                          filterLabel = isFilterActive
+                              ? _selectedDistanceFilter
+                              : 'Distance';
+                        } else if (index == 1) {
+                          isFilterActive = _selectedRatingFilter != 'All';
+                          filterLabel = isFilterActive
+                              ? _selectedRatingFilter
+                              : 'Rating';
+                        } else if (index == 2) {
+                          isFilterActive = _selectedPriceFilter != 'All';
+                          filterLabel = isFilterActive
+                              ? _selectedPriceFilter
+                              : 'Price';
+                        }
 
                         return GestureDetector(
                           onTap: () {
-                            setState(() {
-                              _selectedFilterIndex = index;
-                            });
+                            if (index == 0) {
+                              _showDistanceFilterSheet();
+                            } else if (index == 1) {
+                              _showRatingFilterSheet();
+                            } else if (index == 2) {
+                              _showPriceFilterSheet();
+                            }
                           },
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 18, vertical: 8),
+                                horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.primary
+                              color: isFilterActive
+                                  ? const Color(0xFF005AC2)
                                   : const Color(0xFFEFF3F9),
                               borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isFilterActive
+                                    ? const Color(0xFF005AC2)
+                                    : const Color(0xFFE2E8F0),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  filterName,
+                                  filterLabel,
                                   style: GoogleFonts.inter(
                                     fontSize: 13,
-                                    fontWeight: isSelected
+                                    fontWeight: isFilterActive
                                         ? FontWeight.w600
                                         : FontWeight.w500,
-                                    color: isSelected
+                                    color: isFilterActive
                                         ? Colors.white
                                         : const Color(0xFF1E293B),
                                   ),
@@ -571,9 +1380,9 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                                 Icon(
                                   Icons.keyboard_arrow_down_rounded,
                                   size: 18,
-                                  color: isSelected
+                                  color: isFilterActive
                                       ? Colors.white
-                                      : const Color(0xFF1E293B),
+                                      : const Color(0xFF64748B),
                                 ),
                               ],
                             ),
@@ -588,20 +1397,86 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 
             const SizedBox(height: 10),
 
-            // 3. Worker Listing Cards (Scrollable ListView)
+            // 3. Worker Listing Cards (Scrollable ListView or Empty State)
             Expanded(
-              child: ListView.separated(
-                physics: const BouncingScrollPhysics(),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                itemCount: _workers.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 14),
-                itemBuilder: (context, index) {
-                  final worker = _workers[index];
-                  return _buildWorkerCard(context, worker);
-                },
-              ),
+              child: _workers.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.filter_alt_off_rounded,
+                                size: 48,
+                                color: Color(0xFF005AC2),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              'No matching pros found',
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Try adjusting your distance, rating, or price filters to see more available workers.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: const Color(0xFF64748B),
+                                height: 1.4,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF005AC2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 24, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                elevation: 0,
+                              ),
+                              onPressed: _resetAllFilters,
+                              icon: const Icon(Icons.refresh_rounded,
+                                  color: Colors.white, size: 18),
+                              label: Text(
+                                'Reset All Filters',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      itemCount: _workers.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 14),
+                      itemBuilder: (context, index) {
+                        final worker = _workers[index];
+                        return _buildWorkerCard(context, worker);
+                      },
+                    ),
             ),
           ],
         ),
