@@ -323,6 +323,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
   bool _isInstant = true;
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = const TimeOfDay(hour: 10, minute: 0);
+  int _selectedPaymentMethod = 0; // 0: Pay After Complete, 1: Card
 
   final List<String> _photos = [
     'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400&fit=crop&q=80',
@@ -612,6 +613,10 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
         ? _locationController.text.trim()
         : '24, Galle Road, Colombo 03';
 
+    final chosenPaymentMethod = _selectedPaymentMethod == 0
+        ? 'Pay After Complete'
+        : 'Credit / Debit Card';
+
     // Register active booking in shared state
     BookingService.createActiveBooking(
       workerName: selectedService.defaultWorkerName,
@@ -621,6 +626,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
       serviceName: selectedService.name,
       subServiceName: problemDesc,
       address: userAddress,
+      paymentMethod: chosenPaymentMethod,
     );
 
     // Navigate to radar search screen
@@ -1562,6 +1568,199 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                       ),
                     ],
 
+                    const SizedBox(height: 24),
+
+                    // 5. PAYMENT METHOD SECTION
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '5. Payment Method',
+                          style: GoogleFonts.inter(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF0F172A),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDCFCE7),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            '🛡️ Advance: LKR 0',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF15803D),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Option A: Pay After Complete (Default / Recommended)
+                    InkWell(
+                      onTap: () => setState(() => _selectedPaymentMethod = 0),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: _selectedPaymentMethod == 0
+                              ? const Color(0xFFF0FDF4)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: _selectedPaymentMethod == 0
+                                ? const Color(0xFF16A34A)
+                                : const Color(0xFFE2E8F0),
+                            width: _selectedPaymentMethod == 0 ? 1.8 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFDCFCE7),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.verified_user_rounded,
+                                color: Color(0xFF16A34A),
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Text(
+                                        'Pay After Complete',
+                                        style: TextStyle(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFDCFCE7),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const Text(
+                                          '⭐ RECOMMENDED',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF15803D),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    'Pay via Cash or Card only after work is done & you\'re 100% satisfied.',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              _selectedPaymentMethod == 0
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_off_rounded,
+                              color: _selectedPaymentMethod == 0
+                                  ? const Color(0xFF16A34A)
+                                  : const Color(0xFF94A3B8),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Option B: Pay Online (Card)
+                    InkWell(
+                      onTap: () => setState(() => _selectedPaymentMethod = 1),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: _selectedPaymentMethod == 1
+                              ? const Color(0xFFEFF6FF)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: _selectedPaymentMethod == 1
+                                ? const Color(0xFF005AC2)
+                                : const Color(0xFFE2E8F0),
+                            width: _selectedPaymentMethod == 1 ? 1.8 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.credit_card_rounded,
+                                color: Color(0xFF005AC2),
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Credit / Debit Card',
+                                    style: TextStyle(
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    'Visa, Mastercard & Online Banking with Buyer Protection',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              _selectedPaymentMethod == 1
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_off_rounded,
+                              color: _selectedPaymentMethod == 1
+                                  ? const Color(0xFF005AC2)
+                                  : const Color(0xFF94A3B8),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -1587,7 +1786,9 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                 child: ElevatedButton(
                   onPressed: _submitRequest,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF005AC2),
+                    backgroundColor: _selectedPaymentMethod == 0
+                        ? const Color(0xFF16A34A)
+                        : const Color(0xFF005AC2),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -1597,14 +1798,18 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
-                        Icons.radar_rounded,
+                      Icon(
+                        _selectedPaymentMethod == 0
+                            ? Icons.verified_user_rounded
+                            : Icons.radar_rounded,
                         color: Colors.white,
                         size: 22,
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        'Find Nearby Workers',
+                        _selectedPaymentMethod == 0
+                            ? 'Book Worker (Pay After Complete)'
+                            : 'Pay & Book Nearby Worker',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
