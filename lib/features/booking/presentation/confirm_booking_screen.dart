@@ -458,80 +458,170 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                     const SizedBox(height: 20),
 
                     // 6. Select Payment Method Header & Options
-                    Text(
-                      'Payment Method',
-                      style: GoogleFonts.inter(
-                        color: AppColors.textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Payment Method',
+                          style: GoogleFonts.inter(
+                            color: AppColors.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDCFCE7),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.lock_rounded, size: 11, color: Color(0xFF15803D)),
+                              SizedBox(width: 4),
+                              Text(
+                                'Secure Checkout',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF15803D),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
 
-                    // Option A: Cash on Delivery
+                    // Option A: Pay After Complete (RECOMMENDED / 0 Advance)
                     InkWell(
                       onTap: () => setState(() => _selectedPaymentMethod = 0),
                       borderRadius: BorderRadius.circular(18),
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: _selectedPaymentMethod == 0
-                              ? const Color(0xFFEFF6FF)
+                              ? const Color(0xFFF0FDF4)
                               : Colors.white,
                           borderRadius: BorderRadius.circular(18),
                           border: Border.all(
                             color: _selectedPaymentMethod == 0
-                                ? const Color(0xFF005AC2)
+                                ? const Color(0xFF16A34A)
                                 : const Color(0xFFE2E8F0),
                             width: _selectedPaymentMethod == 0 ? 1.8 : 1,
                           ),
+                          boxShadow: _selectedPaymentMethod == 0
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFF16A34A).withValues(alpha: 0.12),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ]
+                              : [],
                         ),
-                        child: Row(
+                        child: Column(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFDCFCE7),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.payments_rounded,
-                                color: Color(0xFF16A34A),
-                                size: 22,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Cash on Delivery',
-                                    style: TextStyle(
-                                      fontSize: 14.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF0F172A),
-                                    ),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFDCFCE7),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Pay in cash directly to worker after job completion',
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      color: Colors.grey.shade600,
-                                    ),
+                                  child: const Icon(
+                                    Icons.verified_user_rounded,
+                                    color: Color(0xFF16A34A),
+                                    size: 22,
                                   ),
-                                ],
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Text(
+                                            'Pay After Complete',
+                                            style: TextStyle(
+                                              fontSize: 14.5,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF0F172A),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFDCFCE7),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: const Text(
+                                              '⭐ RECOMMENDED',
+                                              style: TextStyle(
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w800,
+                                                color: Color(0xFF15803D),
+                                                letterSpacing: 0.3,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        'Pay via Cash or Card only after work is done & you are 100% satisfied.',
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          color: Colors.grey.shade600,
+                                          height: 1.25,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  _selectedPaymentMethod == 0
+                                      ? Icons.radio_button_checked_rounded
+                                      : Icons.radio_button_off_rounded,
+                                  color: _selectedPaymentMethod == 0
+                                      ? const Color(0xFF16A34A)
+                                      : const Color(0xFF94A3B8),
+                                ),
+                              ],
+                            ),
+                            if (_selectedPaymentMethod == 0) ...[
+                              const SizedBox(height: 10),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: const Color(0xFFBBF7D0)),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.check_circle_rounded, size: 14, color: Color(0xFF16A34A)),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Due Now: LKR 0',
+                                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
+                                    ),
+                                    Spacer(),
+                                    Text(
+                                      'Zero Advance Required',
+                                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF64748B)),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            Icon(
-                              _selectedPaymentMethod == 0
-                                  ? Icons.radio_button_checked_rounded
-                                  : Icons.radio_button_off_rounded,
-                              color: _selectedPaymentMethod == 0
-                                  ? const Color(0xFF005AC2)
-                                  : const Color(0xFF94A3B8),
-                            ),
+                            ],
                           ],
                         ),
                       ),
@@ -543,7 +633,8 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                     InkWell(
                       onTap: () => setState(() => _selectedPaymentMethod = 1),
                       borderRadius: BorderRadius.circular(18),
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: _selectedPaymentMethod == 1
@@ -556,6 +647,15 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                                 : const Color(0xFFE2E8F0),
                             width: _selectedPaymentMethod == 1 ? 1.8 : 1,
                           ),
+                          boxShadow: _selectedPaymentMethod == 1
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFF005AC2).withValues(alpha: 0.12),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ]
+                              : [],
                         ),
                         child: Row(
                           children: [
@@ -576,17 +676,37 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Credit / Debit Card',
-                                    style: TextStyle(
-                                      fontSize: 14.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF0F172A),
-                                    ),
+                                  Row(
+                                    children: [
+                                      const Text(
+                                        'Credit / Debit Card',
+                                        style: TextStyle(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFDBEAFE),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: const Text(
+                                          'VISA/MC',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF1E40AF),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Visa, Mastercard & Online Banking',
+                                    'Visa, Mastercard & Online Banking with Buyer Protection',
                                     style: TextStyle(
                                       fontSize: 11.5,
                                       color: Colors.grey.shade600,
@@ -595,6 +715,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                                 ],
                               ),
                             ),
+                            const SizedBox(width: 8),
                             Icon(
                               _selectedPaymentMethod == 1
                                   ? Icons.radio_button_checked_rounded
@@ -605,6 +726,155 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                             ),
                           ],
                         ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Option C: FixMate Wallet
+                    InkWell(
+                      onTap: () => setState(() => _selectedPaymentMethod = 2),
+                      borderRadius: BorderRadius.circular(18),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: _selectedPaymentMethod == 2
+                              ? const Color(0xFFFAF5FF)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: _selectedPaymentMethod == 2
+                                ? const Color(0xFF7C3AED)
+                                : const Color(0xFFE2E8F0),
+                            width: _selectedPaymentMethod == 2 ? 1.8 : 1,
+                          ),
+                          boxShadow: _selectedPaymentMethod == 2
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFF7C3AED).withValues(alpha: 0.12),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ]
+                              : [],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF3E8FF),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.account_balance_wallet_rounded,
+                                color: Color(0xFF7C3AED),
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Text(
+                                        'FixMate Wallet',
+                                        style: TextStyle(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF3E8FF),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: const Text(
+                                          '1-TAP PAY',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF6B21A8),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Available Balance: LKR 2,500 • Instant booking',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              _selectedPaymentMethod == 2
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_off_rounded,
+                              color: _selectedPaymentMethod == 2
+                                  ? const Color(0xFF7C3AED)
+                                  : const Color(0xFF94A3B8),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Trust Assurance Banner
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                      decoration: BoxDecoration(
+                        color: _selectedPaymentMethod == 0
+                            ? const Color(0xFFF0FDF4)
+                            : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: _selectedPaymentMethod == 0
+                              ? const Color(0xFFBBF7D0)
+                              : const Color(0xFFE2E8F0),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _selectedPaymentMethod == 0
+                                ? Icons.verified_rounded
+                                : Icons.security_rounded,
+                            color: _selectedPaymentMethod == 0
+                                ? const Color(0xFF16A34A)
+                                : const Color(0xFF005AC2),
+                            size: 18,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _selectedPaymentMethod == 0
+                                  ? 'Pay LKR 0 now. Inspect the completed work before paying the technician!'
+                                  : 'Protected by FixMate Buyer Assurance Guarantee. 100% refundable if cancelled.',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                height: 1.3,
+                                color: _selectedPaymentMethod == 0
+                                    ? const Color(0xFF15803D)
+                                    : const Color(0xFF475569),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -621,6 +891,12 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 height: 54,
                 child: ElevatedButton(
                   onPressed: () {
+                    final paymentMethodName = _selectedPaymentMethod == 0
+                        ? 'Pay After Complete'
+                        : _selectedPaymentMethod == 1
+                            ? 'Credit / Debit Card'
+                            : 'FixMate Wallet';
+
                     BookingService.createActiveBooking(
                       workerName: widget.workerName,
                       workerRole: widget.workerRole,
@@ -628,6 +904,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                       price: widget.price,
                       serviceName: widget.serviceName,
                       subServiceName: widget.subServiceName,
+                      paymentMethod: paymentMethodName,
                     );
 
                     Navigator.pushReplacement(
@@ -647,7 +924,9 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: _selectedPaymentMethod == 0
+                        ? const Color(0xFF16A34A)
+                        : AppColors.primary,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shadowColor: Colors.transparent,
@@ -659,7 +938,11 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Confirm Booking',
+                        _selectedPaymentMethod == 0
+                            ? 'Confirm Booking (Pay Later)'
+                            : _selectedPaymentMethod == 1
+                                ? 'Pay ${widget.price} & Book'
+                                : 'Book with Wallet',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -667,8 +950,10 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(
-                        Icons.check_circle_outline_rounded,
+                      Icon(
+                        _selectedPaymentMethod == 0
+                            ? Icons.verified_user_rounded
+                            : Icons.check_circle_outline_rounded,
                         size: 18,
                         color: Colors.white,
                       ),

@@ -21,6 +21,7 @@ class BookingItem {
   final double rating;
   final String? reviewNote;
   final List<String> tags;
+  final String paymentMethod;
 
   const BookingItem({
     required this.id,
@@ -41,6 +42,7 @@ class BookingItem {
     this.rating = 5.0,
     this.reviewNote,
     this.tags = const [],
+    this.paymentMethod = 'Pay After Complete',
   });
 
   BookingItem copyWith({
@@ -62,6 +64,7 @@ class BookingItem {
     double? rating,
     String? reviewNote,
     List<String>? tags,
+    String? paymentMethod,
   }) {
     return BookingItem(
       id: id ?? this.id,
@@ -82,6 +85,7 @@ class BookingItem {
       rating: rating ?? this.rating,
       reviewNote: reviewNote ?? this.reviewNote,
       tags: tags ?? this.tags,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
     );
   }
 }
@@ -183,6 +187,7 @@ class BookingService {
     required String serviceName,
     String? subServiceName,
     String address = '24, Galle Road, Colombo 03',
+    String paymentMethod = 'Pay After Complete',
   }) {
     final now = DateTime.now();
     final timeStr = 'Today, ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
@@ -204,6 +209,7 @@ class BookingService {
       materialsCost: 'LKR 0',
       status: BookingStatus.inProgress,
       statusText: 'IN PROGRESS',
+      paymentMethod: paymentMethod,
     );
 
     _bookings.removeWhere((item) => item.workerName == workerName && item.status == BookingStatus.inProgress);

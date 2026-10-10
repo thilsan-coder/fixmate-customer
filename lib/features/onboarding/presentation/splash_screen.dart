@@ -61,17 +61,18 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     if (!mounted) return;
 
     final loggedIn = await SessionManager.isLoggedIn();
-    final hasCompletedOnboarding = await SessionManager.hasCompletedOnboarding();
+    final hasRegistered = await SessionManager.hasRegistered();
     if (!mounted) return;
 
     if (loggedIn) {
       // 1. User is already logged in -> Go straight to Home
       Navigator.pushReplacementNamed(context, AppRoutes.home);
-    } else if (hasCompletedOnboarding) {
-      // 2. Returning or logged-out user -> Go to Login (skips onboarding, country, language, register)
+    } else if (hasRegistered) {
+      // 2. Previously registered user who logged out -> Go to Login (skips onboarding, country, language, register)
       Navigator.pushReplacementNamed(context, AppRoutes.login);
     } else {
       // 3. New user / First time install -> Start onboarding flow
+      // Splash -> Onboarding -> Select Country -> Select Language -> Register -> Login -> OTP -> Home
       Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
     }
   }
@@ -186,21 +187,36 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
                   // Center Hero Mascot Logo (Ultra HD 4K Transparent with Entrance Scale + Fade)
                   Center(
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: ScaleTransition(
-                        scale: _scaleAnimation,
-                        child: Image.asset(
-                          AppAssets.fixmateMascotLogo,
-                          width: 290,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              AppAssets.logo,
-                              width: 240,
-                              fit: BoxFit.contain,
-                            );
-                          },
+                    child: GestureDetector(
+                      onLongPress: () async {
+                        await SessionManager.resetAll();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('App reset! Starting fresh as New User 🚀'),
+                              backgroundColor: Color(0xFF005AC2),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                        _checkSessionAndNavigate(isImmediate: true);
+                      },
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: ScaleTransition(
+                          scale: _scaleAnimation,
+                          child: Image.asset(
+                            AppAssets.fixmateMascotLogo,
+                            width: 290,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                AppAssets.logo,
+                                width: 240,
+                                fit: BoxFit.contain,
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),

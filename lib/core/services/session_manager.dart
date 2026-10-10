@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SessionManager {
   static const String _keyIsLoggedIn = 'fixmate_is_logged_in';
   static const String _keyCompletedOnboarding = 'fixmate_has_completed_onboarding';
+  static const String _keyHasRegistered = 'fixmate_has_registered_v2';
   static const String _keyUserPhone = 'fixmate_user_phone';
   static const String _keyUserName = 'fixmate_user_name';
   static const String _keyUserEmail = 'fixmate_user_email';
@@ -14,6 +15,7 @@ class SessionManager {
 
   // In-memory fallback states
   static bool _isLoggedIn = false;
+  static bool _hasRegistered = false;
   static bool _hasCompletedOnboarding = false;
   static String _userPhone = '+94 77 123 4567';
   static String _userName = 'Alex Johnson';
@@ -24,6 +26,16 @@ class SessionManager {
   static String _avatarUrl =
       'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80';
   static String _deviceId = 'DEV-98124';
+
+  /// Check whether user has ever registered / logged in with OTP
+  static Future<bool> hasRegistered() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool(_keyHasRegistered) ?? _hasRegistered;
+    } catch (_) {
+      return _hasRegistered;
+    }
+  }
 
   /// Check whether user has ever completed or gone through onboarding/registration
   static Future<bool> hasCompletedOnboarding() async {
@@ -61,6 +73,7 @@ class SessionManager {
     String country = 'Sri Lanka',
   }) async {
     _isLoggedIn = true;
+    _hasRegistered = true;
     _hasCompletedOnboarding = true;
     _userPhone = phone;
     _userName = name;
@@ -70,6 +83,7 @@ class SessionManager {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_keyIsLoggedIn, true);
+      await prefs.setBool(_keyHasRegistered, true);
       await prefs.setBool(_keyCompletedOnboarding, true);
       await prefs.setString(_keyUserPhone, _userPhone);
       await prefs.setString(_keyUserName, _userName);
@@ -150,6 +164,7 @@ class SessionManager {
   /// Full reset to simulate brand-new install
   static Future<void> resetAll() async {
     _isLoggedIn = false;
+    _hasRegistered = false;
     _hasCompletedOnboarding = false;
     _userPhone = '';
     _deviceId = '';
