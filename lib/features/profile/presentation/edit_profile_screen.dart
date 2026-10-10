@@ -25,6 +25,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _notificationsEnabled = true;
   bool _biometricsEnabled = false;
 
+  final List<Map<String, dynamic>> _transactions = [
+    {
+      'title': 'AC Repair Booking #BK-9021',
+      'date': 'Yesterday, 04:30 PM',
+      'amount': -3500,
+      'isCredit': false,
+      'icon': Icons.home_repair_service_rounded,
+      'color': Color(0xFFEF4444),
+    },
+    {
+      'title': 'FixMate Welcome Bonus',
+      'date': '05 Oct, 11:20 AM',
+      'amount': 1000,
+      'isCredit': true,
+      'icon': Icons.card_giftcard_rounded,
+      'color': Color(0xFF16A34A),
+    },
+    {
+      'title': 'Wallet Top-up (Visa)',
+      'date': '02 Oct, 09:15 AM',
+      'amount': 2500,
+      'isCredit': true,
+      'icon': Icons.account_balance_wallet_rounded,
+      'color': Color(0xFF005AC2),
+    },
+  ];
+
   final List<String> _avatarOptions = [
     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
     'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&auto=format&fit=crop&q=80',
@@ -259,67 +286,581 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  // Top Up Wallet Sheet
+  // Top Up Wallet Sheet (Modern Fintech Design)
   void _openWalletTopUpSheet() {
+    final amountCtrl = TextEditingController(text: '1000');
+    int selectedPreset = 1000;
+    String selectedMethod = 'Visa (•••• 4242)';
+
+    final paymentMethods = [
+      {
+        'id': 'visa',
+        'name': 'Visa (•••• 4242)',
+        'subtitle': 'Primary Debit Card',
+        'icon': Icons.credit_card_rounded,
+        'color': const Color(0xFF1E3A8A),
+      },
+      {
+        'id': 'frimi',
+        'name': 'FriMi / Genie',
+        'subtitle': 'Instant Mobile Wallet',
+        'icon': Icons.smartphone_rounded,
+        'color': const Color(0xFF0D9488),
+      },
+      {
+        'id': 'bank',
+        'name': 'Commercial Bank / BOC',
+        'subtitle': 'JustPay Direct Bank',
+        'icon': Icons.account_balance_rounded,
+        'color': const Color(0xFFD97706),
+      },
+    ];
+
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 44,
-                height: 5,
-                decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(10)),
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.88,
               ),
-              const SizedBox(height: 18),
-              Container(
-                width: 60,
-                height: 60,
-                decoration: const BoxDecoration(color: Color(0xFFEFF6FF), shape: BoxShape.circle),
-                child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF005AC2), size: 30),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
               ),
-              const SizedBox(height: 12),
-              const Text('FixMate Wallet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-              const SizedBox(height: 4),
-              Text(
-                'Current Balance: LKR $_walletBalance',
-                style: const TextStyle(fontSize: 14, color: Color(0xFF16A34A), fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 18),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [1000, 2500, 5000].map((amt) {
-                  return OutlinedButton(
-                    onPressed: () {
-                      setState(() => _walletBalance += amt);
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Added LKR $amt to FixMate Wallet! 💳'),
-                          backgroundColor: const Color(0xFF16A34A),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFF005AC2)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: EdgeInsets.only(bottom: keyboardHeight),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Drag handle
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFCBD5E1),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Text('+ LKR $amt', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF005AC2))),
-                  );
-                }).toList(),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Header with Title and Close
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'FixMate Wallet',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0F172A),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B), size: 22),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Divider(height: 20, color: Color(0xFFF1F5F9)),
+
+                  // Scrollable content
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 1. Digital FixMate Card
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF0A2540), Color(0xFF005AC2), Color(0xFF2563EB)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF005AC2).withValues(alpha: 0.35),
+                                  blurRadius: 18,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.shield_rounded, color: Colors.white, size: 14),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            'FixMate Pay',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Icon(Icons.contactless_rounded, color: Colors.white70, size: 22),
+                                  ],
+                                ),
+                                const SizedBox(height: 18),
+                                const Text(
+                                  'AVAILABLE BALANCE',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'LKR $_walletBalance.00',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 18),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      _name.toUpperCase(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                    const Text(
+                                      'ID: #FM-7842',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // 2. Promotional Offer Chip
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF3C7),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFFDE68A)),
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.bolt_rounded, color: Color(0xFFD97706), size: 20),
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Top-up LKR 2,500+ and get instant 5% cashback on your next repair!',
+                                    style: TextStyle(
+                                      color: Color(0xFF92400E),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // 3. Amount selection label
+                          const Text(
+                            'ENTER OR CHOOSE TOP-UP AMOUNT',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.1,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Custom Amount TextField
+                          Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFFCBD5E1)),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'LKR',
+                                  style: TextStyle(
+                                    color: Color(0xFF005AC2),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: TextField(
+                                    controller: amountCtrl,
+                                    keyboardType: TextInputType.number,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                    decoration: const InputDecoration(
+                                      hintText: 'Enter amount',
+                                      border: InputBorder.none,
+                                      hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 16),
+                                    ),
+                                    onChanged: (val) {
+                                      final parsed = int.tryParse(val) ?? 0;
+                                      setSheetState(() {
+                                        selectedPreset = parsed;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // Preset chips row
+                          Row(
+                            children: [500, 1000, 2500, 5000].map((amt) {
+                              final isSel = selectedPreset == amt;
+                              return Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                                  child: InkWell(
+                                    onTap: () {
+                                      setSheetState(() {
+                                        selectedPreset = amt;
+                                        amountCtrl.text = amt.toString();
+                                      });
+                                    },
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 150),
+                                      padding: const EdgeInsets.symmetric(vertical: 9),
+                                      decoration: BoxDecoration(
+                                        color: isSel ? const Color(0xFF005AC2) : const Color(0xFFF1F5F9),
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: isSel ? const Color(0xFF005AC2) : const Color(0xFFE2E8F0),
+                                        ),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          '+$amt',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                            color: isSel ? Colors.white : const Color(0xFF334155),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+
+                          const SizedBox(height: 22),
+
+                          // 4. Payment Method label
+                          const Text(
+                            'PAYMENT METHOD',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.1,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Payment Methods list
+                          ...paymentMethods.map((pm) {
+                            final isSel = selectedMethod == pm['name'];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: InkWell(
+                                onTap: () {
+                                  setSheetState(() {
+                                    selectedMethod = pm['name'] as String;
+                                  });
+                                },
+                                borderRadius: BorderRadius.circular(14),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: isSel ? const Color(0xFFF0F7FF) : const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: isSel ? const Color(0xFF005AC2) : const Color(0xFFE2E8F0),
+                                      width: isSel ? 1.5 : 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: (pm['color'] as Color).withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Icon(pm['icon'] as IconData, color: pm['color'] as Color, size: 20),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              pm['name'] as String,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF1E293B),
+                                              ),
+                                            ),
+                                            Text(
+                                              pm['subtitle'] as String,
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                color: Color(0xFF64748B),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Icon(
+                                        isSel ? Icons.check_circle_rounded : Icons.radio_button_off_rounded,
+                                        color: isSel ? const Color(0xFF005AC2) : const Color(0xFFCBD5E1),
+                                        size: 20,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+
+                          const SizedBox(height: 16),
+
+                          // 5. Submit Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                final amt = int.tryParse(amountCtrl.text) ?? 0;
+                                if (amt <= 0) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Please enter a valid amount to top up!'),
+                                      backgroundColor: Color(0xFFDC2626),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                setState(() {
+                                  _walletBalance += amt;
+                                  _transactions.insert(0, {
+                                    'title': 'Wallet Top-up ($selectedMethod)',
+                                    'date': 'Just now',
+                                    'amount': amt,
+                                    'isCredit': true,
+                                    'icon': Icons.add_circle_outline_rounded,
+                                    'color': const Color(0xFF16A34A),
+                                  });
+                                });
+
+                                Navigator.pop(context);
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Row(
+                                      children: [
+                                        const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            'LKR $amt added to FixMate Wallet! New Balance: LKR $_walletBalance 🎉',
+                                            style: const TextStyle(fontWeight: FontWeight.w600),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    backgroundColor: const Color(0xFF16A34A),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF0047AB),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.add_card_rounded, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text('Top Up LKR ${amountCtrl.text.isEmpty ? "0" : amountCtrl.text} Now'),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // 6. Recent Transactions List
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'RECENT TRANSACTIONS',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.1,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '${_transactions.length} Records',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _transactions.length,
+                            separatorBuilder: (context, idx) => const Divider(height: 12, color: Color(0xFFF1F5F9)),
+                            itemBuilder: (context, idx) {
+                              final tx = _transactions[idx];
+                              final isCredit = tx['isCredit'] as bool;
+                              final amountVal = tx['amount'] as int;
+
+                              return Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: (tx['color'] as Color).withValues(alpha: 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(tx['icon'] as IconData, color: tx['color'] as Color, size: 18),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          tx['title'] as String,
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF1E293B),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          tx['date'] as String,
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: Color(0xFF94A3B8),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    '${isCredit ? "+" : "-"} LKR ${amountVal.abs()}',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: isCredit ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-            ],
-          ),
+            );
+          },
         );
       },
     );
