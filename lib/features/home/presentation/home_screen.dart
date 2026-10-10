@@ -31,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'buttonText': 'Book now',
       'image': AppAssets.workerBanner,
       'gradient': const [Color(0xFF0047AB), Color(0xFF005AC2)],
+      'category': 'Electrician',
     },
     {
       'title': 'Emergency\n24/7 Rapid\nService',
@@ -38,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'buttonText': 'Find Now',
       'image': AppAssets.onboardingHero,
       'gradient': const [Color(0xFF0F766E), Color(0xFF0D9488)],
+      'category': 'Plumber',
     },
     {
       'title': 'Certified\nQuality &\nWarranty',
@@ -45,6 +47,25 @@ class _HomeScreenState extends State<HomeScreen> {
       'buttonText': 'Explore',
       'image': AppAssets.servicePainting,
       'gradient': const [Color(0xFF4338CA), Color(0xFF6366F1)],
+      'category': 'Painter',
+    },
+    {
+      'title': 'AC Service &\nDeep Clean\nCombo',
+      'tagline': 'FLAT 25% OFF TODAY',
+      'buttonText': 'Claim Offer',
+      'image': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=500&fit=crop&q=80',
+      'assetFallback': AppAssets.workerBanner,
+      'gradient': const [Color(0xFFC2410C), Color(0xFFEA580C)],
+      'category': 'AC Repair',
+    },
+    {
+      'title': 'Home Carpentry\n& Door Lock\nFitting',
+      'tagline': 'SAME DAY SERVICE',
+      'buttonText': 'Get Fixed',
+      'image': 'https://images.unsplash.com/photo-1542013936693-884638332954?w=500&fit=crop&q=80',
+      'assetFallback': AppAssets.servicePainting,
+      'gradient': const [Color(0xFF065F46), Color(0xFF059669)],
+      'category': 'Carpenter',
     },
   ];
 
@@ -891,16 +912,35 @@ class _HomeScreenState extends State<HomeScreen> {
                               top: 0,
                               bottom: 0,
                               width: 155,
-                              child: Image.asset(
-                                slide['image'] as String,
-                                fit: BoxFit.cover,
-                                alignment: Alignment.topCenter,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Center(
-                                    child: Icon(Icons.handyman_rounded, color: Colors.white70, size: 70),
-                                  );
-                                },
-                              ),
+                              child: (slide['image'] as String).startsWith('http')
+                                  ? Image.network(
+                                      slide['image'] as String,
+                                      fit: BoxFit.cover,
+                                      alignment: Alignment.topCenter,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        final fallback = slide['assetFallback'] as String?;
+                                        if (fallback != null) {
+                                          return Image.asset(
+                                            fallback,
+                                            fit: BoxFit.cover,
+                                            alignment: Alignment.topCenter,
+                                          );
+                                        }
+                                        return const Center(
+                                          child: Icon(Icons.handyman_rounded, color: Colors.white70, size: 70),
+                                        );
+                                      },
+                                    )
+                                  : Image.asset(
+                                      slide['image'] as String,
+                                      fit: BoxFit.cover,
+                                      alignment: Alignment.topCenter,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return const Center(
+                                          child: Icon(Icons.handyman_rounded, color: Colors.white70, size: 70),
+                                        );
+                                      },
+                                    ),
                             ),
 
                             // Text & Button Content
@@ -941,7 +981,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   InkWell(
                                     onTap: () {
-                                      Navigator.pushNamed(context, AppRoutes.bookService);
+                                      final targetCategory = slide['category'] as String?;
+                                      if (targetCategory != null && targetCategory.isNotEmpty) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => BookServiceScreen(
+                                              serviceName: targetCategory,
+                                              isCategoryFixed: true,
+                                            ),
+                                          ),
+                                        );
+                                      } else {
+                                        Navigator.pushNamed(context, AppRoutes.bookService);
+                                      }
                                     },
                                     borderRadius: BorderRadius.circular(20),
                                     child: Container(
@@ -955,14 +1008,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                         children: [
                                           Text(
                                             slide['buttonText'] as String,
-                                            style: const TextStyle(
-                                              color: Color(0xFF0047AB),
+                                            style: TextStyle(
+                                              color: (slide['gradient'] as List<Color>).first,
                                               fontWeight: FontWeight.bold,
                                               fontSize: 12,
                                             ),
                                           ),
                                           const SizedBox(width: 4),
-                                          const Icon(Icons.arrow_forward_rounded, color: Color(0xFF0047AB), size: 14),
+                                          Icon(
+                                            Icons.arrow_forward_rounded,
+                                            color: (slide['gradient'] as List<Color>).first,
+                                            size: 14,
+                                          ),
                                         ],
                                       ),
                                     ),
