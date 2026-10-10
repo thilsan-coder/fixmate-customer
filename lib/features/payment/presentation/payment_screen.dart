@@ -27,8 +27,8 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  // 0 = Credit/Debit Card, 1 = Cash on Delivery
-  int _selectedPaymentMethod = 0;
+  // 0 = Credit/Debit Card, 1 = Pay After Completion, 2 = FixMate Wallet
+  int _selectedPaymentMethod = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +72,58 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // 0. Job Completed Trust Banner
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 14),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0FDF4),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFDCFCE7)),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFDCFCE7),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.verified_rounded,
+                              color: Color(0xFF16A34A),
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Job Completed by ${widget.workerName}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF15803D),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Pay after complete: Inspect the work before settling payment.',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    color: const Color(0xFF166534),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                     // 1. Selected Service Card (Top Card)
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -171,7 +223,135 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
                     const SizedBox(height: 12),
 
-                    // Option 1: Credit / Debit Card
+                    // Option 1: Pay After Completion (Default / In-Person Pay)
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedPaymentMethod = 1;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: _selectedPaymentMethod == 1
+                              ? const Color(0xFFF0FDF4)
+                              : AppColors.cardWhite,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: _selectedPaymentMethod == 1
+                                ? const Color(0xFF16A34A)
+                                : AppColors.borderLight,
+                            width: _selectedPaymentMethod == 1 ? 1.8 : 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (_selectedPaymentMethod == 1 ? const Color(0xFF16A34A) : AppColors.neutral).withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            // Pay After Completion Icon Container
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFDCFCE7),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.verified_user_rounded,
+                                color: Color(0xFF16A34A),
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+
+                            // Text & Subtitle
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Wrap(
+                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    spacing: 6,
+                                    runSpacing: 4,
+                                    children: [
+                                      Text(
+                                        'Pay After Completion',
+                                        style: GoogleFonts.inter(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFDCFCE7),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const Text(
+                                          '⭐ RECOMMENDED',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF15803D),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Pay via cash or card directly to ${widget.workerName} upon satisfaction',
+                                    style: GoogleFonts.inter(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // Radio Indicator
+                            Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: _selectedPaymentMethod == 1
+                                      ? const Color(0xFF16A34A)
+                                      : AppColors.borderLight,
+                                  width: 2,
+                                ),
+                              ),
+                              child: _selectedPaymentMethod == 1
+                                  ? Center(
+                                      child: Container(
+                                        width: 11,
+                                        height: 11,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF16A34A),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Option 2: Credit / Debit Card
                     GestureDetector(
                       onTap: () {
                         setState(() {
@@ -276,26 +456,26 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
                     const SizedBox(height: 12),
 
-                    // Option 2: Cash on Delivery
+                    // Option 3: FixMate Wallet
                     GestureDetector(
                       onTap: () {
                         setState(() {
-                          _selectedPaymentMethod = 1;
+                          _selectedPaymentMethod = 2;
                         });
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: _selectedPaymentMethod == 1
-                              ? const Color(0xFFF0F6FF)
+                          color: _selectedPaymentMethod == 2
+                              ? const Color(0xFFFAF5FF)
                               : AppColors.cardWhite,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: _selectedPaymentMethod == 1
-                                ? AppColors.primary
+                            color: _selectedPaymentMethod == 2
+                                ? const Color(0xFF7C3AED)
                                 : AppColors.borderLight,
-                            width: _selectedPaymentMethod == 1 ? 1.8 : 1,
+                            width: _selectedPaymentMethod == 2 ? 1.8 : 1,
                           ),
                           boxShadow: [
                             BoxShadow(
@@ -307,38 +487,55 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         ),
                         child: Row(
                           children: [
-                            // Cash Icon Container
                             Container(
                               width: 44,
                               height: 44,
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE2E8F0),
+                                color: const Color(0xFFF3E8FF),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
-                                Icons.payments_outlined,
-                                color: AppColors.textPrimary,
+                                Icons.account_balance_wallet_rounded,
+                                color: Color(0xFF7C3AED),
                                 size: 22,
                               ),
                             ),
                             const SizedBox(width: 14),
-
-                            // Text & Subtitle
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'Cash on Delivery',
-                                    style: GoogleFonts.inter(
-                                      color: AppColors.textPrimary,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'FixMate Wallet',
+                                        style: GoogleFonts.inter(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF3E8FF),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: const Text(
+                                          '1-TAP PAY',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF6B21A8),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Pay after service completion',
+                                    'Balance: LKR 2,500 • Instant checkout',
                                     style: GoogleFonts.inter(
                                       color: AppColors.textSecondary,
                                       fontSize: 12,
@@ -348,27 +545,25 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 ],
                               ),
                             ),
-
-                            // Radio Indicator
                             Container(
                               width: 22,
                               height: 22,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: _selectedPaymentMethod == 1
-                                      ? AppColors.primary
+                                  color: _selectedPaymentMethod == 2
+                                      ? const Color(0xFF7C3AED)
                                       : AppColors.borderLight,
                                   width: 2,
                                 ),
                               ),
-                              child: _selectedPaymentMethod == 1
+                              child: _selectedPaymentMethod == 2
                                   ? Center(
                                       child: Container(
                                         width: 11,
                                         height: 11,
                                         decoration: const BoxDecoration(
-                                          color: AppColors.primary,
+                                          color: Color(0xFF7C3AED),
                                           shape: BoxShape.circle,
                                         ),
                                       ),
@@ -469,8 +664,60 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
                     const SizedBox(height: 20),
 
-                    // 4. Card Input Field (Shown when Card is selected)
-                    if (_selectedPaymentMethod == 0) ...[
+                    // 4. Dynamic Details Section based on Selection
+                    if (_selectedPaymentMethod == 1) ...[
+                      // Pay After Completion Instruction Card
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0FDF4),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFBBF7D0)),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFDCFCE7),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.verified_user_rounded,
+                                color: Color(0xFF16A34A),
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Pay After Completion',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF15803D),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    'Pay LKR 2,875 directly to ${widget.workerName} via Cash or Card only after work completion and inspection.',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: Colors.grey.shade700,
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else if (_selectedPaymentMethod == 0) ...[
+                      // Card Input Field
                       Text(
                         'Card Number',
                         style: GoogleFonts.inter(
@@ -511,6 +758,49 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           ],
                         ),
                       ),
+                    ] else if (_selectedPaymentMethod == 2) ...[
+                      // Wallet Balance Box
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFAF5FF),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE9D5FF)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.account_balance_wallet_rounded,
+                              color: Color(0xFF7C3AED),
+                              size: 24,
+                            ),
+                            const SizedBox(width: 14),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Wallet Balance: LKR 2,500',
+                                    style: TextStyle(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF6B21A8),
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'Deduction will occur instantly with 1-tap checkout.',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: Color(0xFF7E22CE),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -542,7 +832,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: _selectedPaymentMethod == 1
+                            ? const Color(0xFF16A34A)
+                            : _selectedPaymentMethod == 2
+                                ? const Color(0xFF7C3AED)
+                                : AppColors.primary,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -552,18 +846,31 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
-                            Icons.lock_rounded,
-                            size: 18,
+                          Icon(
+                            _selectedPaymentMethod == 1
+                                ? Icons.verified_user_rounded
+                                : _selectedPaymentMethod == 2
+                                    ? Icons.account_balance_wallet_rounded
+                                    : Icons.lock_rounded,
+                            size: 20,
                             color: Colors.white,
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            'Confirm & Pay',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -0.2,
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                _selectedPaymentMethod == 1
+                                    ? 'Pay After Completion (LKR 2,875)'
+                                    : _selectedPaymentMethod == 2
+                                        ? 'Pay LKR 2,875 with Wallet'
+                                        : 'Pay LKR 2,875 Online',
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -574,18 +881,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
-                        Icons.shield_outlined,
+                      Icon(
+                        _selectedPaymentMethod == 1
+                            ? Icons.verified_user_rounded
+                            : Icons.shield_outlined,
                         size: 15,
-                        color: AppColors.textSecondary,
+                        color: _selectedPaymentMethod == 1
+                            ? const Color(0xFF16A34A)
+                            : AppColors.textSecondary,
                       ),
                       const SizedBox(width: 6),
-                      Text(
-                        'Secure encrypted payment',
-                        style: GoogleFonts.inter(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                      Flexible(
+                        child: Text(
+                          _selectedPaymentMethod == 1
+                              ? 'Pay directly to ${widget.workerName} after completion'
+                              : 'Secure encrypted payment',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            color: _selectedPaymentMethod == 1
+                                ? const Color(0xFF15803D)
+                                : AppColors.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],

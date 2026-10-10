@@ -475,6 +475,58 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _item.paymentMethod.contains('Complete')
+                            ? const Color(0xFFF0FDF4)
+                            : const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: _item.paymentMethod.contains('Complete')
+                              ? const Color(0xFFDCFCE7)
+                              : const Color(0xFFDBEAFE),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _item.paymentMethod.contains('Complete')
+                                ? Icons.verified_user_rounded
+                                : Icons.credit_card_rounded,
+                            size: 16,
+                            color: _item.paymentMethod.contains('Complete')
+                                ? const Color(0xFF16A34A)
+                                : const Color(0xFF005AC2),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Payment: ${_item.paymentMethod}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: _item.paymentMethod.contains('Complete')
+                                  ? const Color(0xFF15803D)
+                                  : const Color(0xFF005AC2),
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            _item.paymentMethod.contains('Complete')
+                                ? 'Due after service'
+                                : 'Prepaid',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: _item.paymentMethod.contains('Complete')
+                                  ? const Color(0xFF16A34A)
+                                  : const Color(0xFF005AC2),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
