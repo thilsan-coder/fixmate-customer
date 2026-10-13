@@ -37,7 +37,7 @@ class _SosButtonState extends State<SosButton>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
   }
 
@@ -65,39 +65,66 @@ class _SosButtonState extends State<SosButton>
       return AnimatedBuilder(
         animation: _pulseController,
         builder: (context, child) {
+          final pulseVal = _pulseController.value;
           return Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFEF4444).withValues(
-                    alpha: 0.25 + (_pulseController.value * 0.35),
+                  color: const Color(0xFFDC2626).withValues(
+                    alpha: 0.3 + (pulseVal * 0.4),
                   ),
-                  blurRadius: 14 + (_pulseController.value * 6),
-                  spreadRadius: _pulseController.value * 3,
+                  blurRadius: 16 + (pulseVal * 8),
+                  spreadRadius: pulseVal * 4,
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Material(
-              color: const Color(0xFFDC2626),
+              color: Colors.transparent,
               shape: const CircleBorder(),
               child: InkWell(
                 customBorder: const CircleBorder(),
                 onTap: _onPressed,
-                child: const Padding(
-                  padding: EdgeInsets.all(12),
+                child: Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFFEF4444),
+                        Color(0xFFB91C1C),
+                        Color(0xFF7F1D1D),
+                      ],
+                    ),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      width: 2.2,
+                    ),
+                  ),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.shield_rounded, color: Colors.white, size: 20),
-                      SizedBox(height: 2),
+                      const Icon(
+                        Icons.shield_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      const SizedBox(height: 1),
                       Text(
                         'SOS',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
+                          letterSpacing: 0.8,
                         ),
                       ),
                     ],
@@ -111,71 +138,125 @@ class _SosButtonState extends State<SosButton>
     }
 
     if (widget.variant == SosButtonVariant.cardButton) {
-      return Material(
-        color: const Color(0xFFFEE2E2),
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: _onPressed,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.shield_rounded, size: 14, color: Color(0xFFDC2626)),
-                const SizedBox(width: 4),
-                Text(
-                  '🚨 SOS Emergency',
-                  style: GoogleFonts.inter(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFFDC2626),
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFEF2F2), Color(0xFFFEE2E2)],
+          ),
+          border: Border.all(color: const Color(0xFFFECACA), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFDC2626).withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: _onPressed,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFDC2626),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.shield_rounded,
+                      size: 11,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 7),
+                  Text(
+                    'POLICE SOS DISPATCH',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF991B1B),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       );
     }
 
-    // Default Pill Variant for AppBars
+    // Official Pill Variant (AppBars)
     return AnimatedBuilder(
       animation: _pulseController,
       builder: (context, child) {
         return Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(22),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFEF4444),
+                Color(0xFFDC2626),
+                Color(0xFF991B1B),
+              ],
+            ),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.8),
+              width: 1.4,
+            ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFEF4444).withValues(
-                  alpha: 0.15 + (_pulseController.value * 0.25),
-                ),
-                blurRadius: 8,
-                spreadRadius: 1,
+                color: const Color(0xFFDC2626).withValues(alpha: 0.2),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
           child: Material(
-            color: const Color(0xFFDC2626),
-            borderRadius: BorderRadius.circular(20),
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(22),
             child: InkWell(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(22),
               onTap: _onPressed,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5.5),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.warning_amber_rounded, size: 14, color: Colors.white),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(
+                          alpha: 0.4 + (_pulseController.value * 0.6),
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    const Icon(
+                      Icons.shield_rounded,
+                      size: 13,
+                      color: Colors.white,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'SOS',
                       style: GoogleFonts.inter(
-                        fontSize: 12,
+                        fontSize: 11.5,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
-                        letterSpacing: 0.5,
+                        letterSpacing: 0.8,
                       ),
                     ),
                   ],

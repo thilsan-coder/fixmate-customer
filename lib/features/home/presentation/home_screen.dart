@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_assets.dart';
 import '../../../core/constants/country_data.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/services/session_manager.dart';
 import '../../../core/widgets/fix_mate_bottom_nav.dart';
 import '../../booking/presentation/book_service_screen.dart';
+import '../../../core/services/location_service.dart';
+import '../../location/presentation/widgets/enable_location_modal.dart';
 import '../../safety/presentation/widgets/sos_button.dart';
 import 'all_categories_screen.dart';
 
@@ -181,6 +184,28 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadUser();
     _startBannerAutoScroll();
+    _checkLocationOnStartup();
+  }
+
+  void _checkLocationOnStartup() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      if (LocationService.hasPromptedThisSession) return;
+      final isReady = await LocationService.isLocationReady();
+      if (!isReady && mounted) {
+        // Small delay for smooth screen entry after splash
+        await Future.delayed(const Duration(milliseconds: 700));
+        if (mounted) {
+          EnableLocationModal.show(
+            context,
+            onLocationEnabled: () {
+              if (mounted) setState(() {});
+            },
+            onManualCitySelected: _showCityPicker,
+          );
+        }
+      }
+    });
   }
 
   void _startBannerAutoScroll() {
@@ -314,6 +339,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _promptLocationModal() {
+    if (!mounted) return;
+    EnableLocationModal.show(
+      context,
+      onLocationEnabled: () {
+        if (mounted) setState(() {});
+      },
+      onManualCitySelected: _showCityPicker,
     );
   }
 
@@ -698,62 +734,157 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Ultra-Modern Header: User Profile Greeting + Interactive City Pill + Notification Bell
+              // 1. Urban Company & Swiggy 2026 Enterprise Header:
+              // Location Badge + Address Line + Dropdown + GPS Status Pill
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      InkWell(
-                        onLongPress: _handleLogout,
-                        borderRadius: BorderRadius.circular(8),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        final isReady = await LocationService.isLocationReady();
+                        if (!mounted) return;
+                        if (!isReady) {
+                          _promptLocationModal();
+                        } else {
+                          _showCityPicker();
+                        }
+                      },
+                      onLongPress: _handleLogout,
+                      borderRadius: BorderRadius.circular(14),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
                         child: Row(
                           children: [
-                            Text(
-                              'Good morning, $_userName',
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0F172A),
-                                letterSpacing: -0.4,
+                            // Soft Blue Location Badge Container
+                            Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0xFFDBEAFE),
+                                  width: 1,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.location_on_rounded,
+                                color: Color(0xFF005AC2),
+                                size: 22,
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            const Text('👋', style: TextStyle(fontSize: 20)),
+                            const SizedBox(width: 10),
+
+                            // Address & Greeting Details
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Top: Address Label + Dropdown Icon
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          '$_userCity, Sri Lanka',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 15.5,
+                                            fontWeight: FontWeight.w800,
+                                            color: const Color(0xFF0F172A),
+                                            letterSpacing: -0.2,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      const Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        color: Color(0xFF005AC2),
+                                        size: 18,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+
+                                  // Bottom: User Greeting + GPS Live Chip
+                                  ValueListenableBuilder<bool>(
+                                    valueListenable: LocationService.isGpsEnabledNotifier,
+                                    builder: (context, isGpsOn, _) {
+                                      return Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              'Hi, $_userName',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                                color: const Color(0xFF64748B),
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 1.5,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: isGpsOn
+                                                  ? const Color(0xFFDCFCE7)
+                                                  : const Color(0xFFF1F5F9),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Container(
+                                                  width: 5,
+                                                  height: 5,
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: isGpsOn
+                                                        ? const Color(0xFF16A34A)
+                                                        : const Color(0xFF94A3B8),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  isGpsOn ? 'GPS' : 'Manual',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 9.5,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: isGpsOn
+                                                        ? const Color(0xFF15803D)
+                                                        : const Color(0xFF64748B),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 3),
-
-                      // Interactive City Selector Pill
-                      InkWell(
-                        onTap: _showCityPicker,
-                        borderRadius: BorderRadius.circular(10),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.location_on_outlined, color: Color(0xFF005AC2), size: 16),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$_userCity, ${CountryData.selectedCountry.name}',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF005AC2),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(width: 2),
-                              const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF005AC2), size: 18),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
 
+                  const SizedBox(width: 8),
+
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       const SosButton(
                         workerName: 'Nimal Perera',
@@ -773,16 +904,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         onLongPress: _showCrossDeviceSecurityDialog,
                         borderRadius: BorderRadius.circular(16),
                         child: Container(
-                          width: 48,
-                          height: 48,
+                          width: 46,
+                          height: 46,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.03),
-                                blurRadius: 10,
+                                blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
                             ],
@@ -790,13 +921,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              const Icon(Icons.notifications_none_rounded, color: Color(0xFF0F172A), size: 24),
+                              const Icon(
+                                Icons.notifications_none_rounded,
+                                color: Color(0xFF0F172A),
+                                size: 22,
+                              ),
                               Positioned(
-                                top: 13,
-                                right: 14,
+                                top: 12,
+                                right: 13,
                                 child: Container(
-                                  width: 8,
-                                  height: 8,
+                                  width: 7,
+                                  height: 7,
                                   decoration: const BoxDecoration(
                                     color: Color(0xFFEF4444),
                                     shape: BoxShape.circle,
