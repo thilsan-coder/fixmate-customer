@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../chat/presentation/chat_screen.dart';
 import '../../payment/presentation/payment_screen.dart';
+import '../../safety/presentation/widgets/sos_button.dart';
 
 class JobProgressScreen extends StatefulWidget {
   final String workerName;
@@ -319,6 +320,16 @@ class _JobProgressScreenState extends State<JobProgressScreen> {
           ),
         ),
         actions: [
+          SosButton(
+            workerName: widget.workerName,
+            workerRole: widget.workerRole,
+            workerAvatar: widget.avatarUrl,
+            serviceName: widget.serviceName,
+            subServiceName: widget.subServiceName,
+            price: widget.price,
+            variant: SosButtonVariant.pill,
+          ),
+          const SizedBox(width: 8),
           Container(
             margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
