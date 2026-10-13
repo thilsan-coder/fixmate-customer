@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../chat/presentation/chat_screen.dart';
 import '../../booking/presentation/job_progress_screen.dart';
+import '../../safety/presentation/widgets/sos_button.dart';
 
 class LiveTrackingScreen extends StatefulWidget {
   final String workerName;
@@ -189,6 +190,16 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
           ),
         ),
         actions: [
+          SosButton(
+            workerName: widget.workerName,
+            workerRole: widget.workerRole,
+            workerAvatar: widget.avatarUrl,
+            serviceName: widget.serviceName,
+            subServiceName: widget.subServiceName,
+            price: widget.price,
+            variant: SosButtonVariant.pill,
+          ),
+          const SizedBox(width: 8),
           Container(
             margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -233,6 +244,21 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                   Positioned.fill(
                     child: CustomPaint(
                       painter: _LiveRouteMapPainter(step: _currentStep),
+                    ),
+                  ),
+
+                  // Floating SOS Shield Button on Map
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: SosButton(
+                      workerName: widget.workerName,
+                      workerRole: widget.workerRole,
+                      workerAvatar: widget.avatarUrl,
+                      serviceName: widget.serviceName,
+                      subServiceName: widget.subServiceName,
+                      price: widget.price,
+                      variant: SosButtonVariant.floating,
                     ),
                   ),
 

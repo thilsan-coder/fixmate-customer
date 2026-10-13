@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/chat_service.dart';
+import '../../safety/presentation/widgets/sos_button.dart';
 
 class ChatScreen extends StatefulWidget {
   final String workerName;
@@ -255,6 +256,13 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
         ),
         actions: [
+          SosButton(
+            workerName: widget.workerName,
+            workerRole: widget.workerRole,
+            workerAvatar: widget.avatarUrl,
+            serviceName: widget.serviceName,
+            variant: SosButtonVariant.pill,
+          ),
           IconButton(
             icon: const Icon(
               Icons.phone_rounded,
