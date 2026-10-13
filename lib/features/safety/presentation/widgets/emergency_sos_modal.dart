@@ -34,7 +34,7 @@ class EmergencySosModal extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      enableDrag: false,
+      enableDrag: false, // Prevent accidental dismissal while panic countdown is active
       builder: (context) => EmergencySosModal(
         workerName: workerName,
         workerRole: workerRole,
@@ -51,13 +51,13 @@ class EmergencySosModal extends StatefulWidget {
 }
 
 class _EmergencySosModalState extends State<EmergencySosModal>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   int _countdown = 5;
   Timer? _countdownTimer;
   bool _isTriggered = false;
-  bool _showReportDetails = false;
-  SosMode _selectedMode = SosMode.loud;
+
   late AnimationController _pulseController;
+  late AnimationController _equalizerController;
 
   @override
   void initState() {
@@ -67,7 +67,11 @@ class _EmergencySosModalState extends State<EmergencySosModal>
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
 
-    // If already active, jump straight to active state
+    _equalizerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 550),
+    )..repeat(reverse: true);
+
     if (EmergencyService.hasActiveEmergency) {
       _isTriggered = true;
     } else {
@@ -85,26 +89,26 @@ class _EmergencySosModalState extends State<EmergencySosModal>
         });
       } else {
         timer.cancel();
-        _fireEmergency(_selectedMode);
+        _fireEmergency();
       }
     });
   }
 
-  void _fireEmergency(SosMode mode) {
+  void _fireEmergency() {
     _countdownTimer?.cancel();
     setState(() {
       _isTriggered = true;
-      _selectedMode = mode;
     });
 
+    // Auto-dispatch all channels: Admin telemetry + 119 Call + Nearest Station + 30s Audio
     EmergencyService.triggerEmergency(
       workerName: widget.workerName,
       workerRole: widget.workerRole,
       workerAvatar: widget.workerAvatar,
       serviceName: widget.serviceName,
       price: widget.price,
-      mode: mode,
-      autoCall119: mode == SosMode.loud,
+      mode: SosMode.loud,
+      autoCall119: true,
     );
   }
 
@@ -114,18 +118,31 @@ class _EmergencySosModalState extends State<EmergencySosModal>
   }
 
   void _resolveEmergency() {
+    _countdownTimer?.cancel();
     EmergencyService.resolveEmergency();
     Navigator.of(context).pop();
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: const Color(0xFF16A34A),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-            SizedBox(width: 8),
-            Text('Emergency Mode Deactivated. Glad you are safe!'),
+            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Emergency cleared. You are marked safe.',
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  color: Colors.white,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
       ),
@@ -136,44 +153,104 @@ class _EmergencySosModalState extends State<EmergencySosModal>
   void dispose() {
     _countdownTimer?.cancel();
     _pulseController.dispose();
+    _equalizerController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.90,
-      decoration: BoxDecoration(
-        color: _selectedMode == SosMode.silent && _isTriggered
-            ? const Color(0xFF0F172A)
-            : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 30,
-            offset: const Offset(0, -8),
-          ),
-        ],
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.90,
+      ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         top: false,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Drag Handle Bar
-            const SizedBox(height: 12),
+            // Top Drag Handle
+            const SizedBox(height: 10),
             Container(
-              width: 48,
-              height: 5,
+              width: 38,
+              height: 4,
               decoration: BoxDecoration(
-                color: _selectedMode == SosMode.silent && _isTriggered
-                    ? Colors.white24
-                    : const Color(0xFFE2E8F0),
+                color: const Color(0xFFE2E8F0),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
+            // Official Clean Header Strip
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDC2626).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.shield_rounded,
+                      color: Color(0xFFDC2626),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Emergency Assistance',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          'Sri Lanka Police 119 & FixMate 24/7 Desk',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF64748B),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: _isTriggered ? _resolveEmergency : _cancelCountdown,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF1F5F9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // Dynamic Body: Countdown OR Active Emergency Hub
             Expanded(
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
@@ -189,41 +266,47 @@ class _EmergencySosModalState extends State<EmergencySosModal>
   }
 
   // ==========================================
-  // VIEW 1: 5-SECOND COUNTDOWN VIEW
+  // VIEW 1: CLEAN 5-SECOND AUTO-COUNTDOWN VIEW
   // ==========================================
   Widget _buildCountdownView() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Warning Icon with Pulsing Effect
+          const SizedBox(height: 6),
+
+          // High-Visibility Animated Countdown Disc
           AnimatedBuilder(
             animation: _pulseController,
             builder: (context, child) {
+              final val = _pulseController.value;
               return Container(
-                width: 100,
-                height: 100,
+                width: 96,
+                height: 96,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFFFEE2E2),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFEF4444).withValues(
-                        alpha: 0.2 + (_pulseController.value * 0.25),
+                      color: const Color(0xFFDC2626).withValues(
+                        alpha: 0.2 + (val * 0.25),
                       ),
-                      blurRadius: 24,
-                      spreadRadius: _pulseController.value * 8,
+                      blurRadius: 16 + (val * 6),
+                      spreadRadius: val * 3,
                     ),
                   ],
                 ),
                 child: Center(
                   child: Container(
-                    width: 76,
-                    height: 76,
+                    width: 74,
+                    height: 74,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Color(0xFFDC2626),
+                      gradient: LinearGradient(
+                        colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                      ),
                     ),
                     child: Center(
                       child: Text(
@@ -241,429 +324,238 @@ class _EmergencySosModalState extends State<EmergencySosModal>
             },
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 14),
 
           Text(
-            'Emergency Assistance Triggering',
+            'Auto-Dispatching in $_countdown Seconds',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              fontSize: 21,
+              fontSize: 18,
               fontWeight: FontWeight.w800,
               color: const Color(0xFF0F172A),
-              letterSpacing: -0.4,
+              letterSpacing: -0.3,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
-            'All 3 emergency channels will be alerted automatically in $_countdown seconds.',
+            'Police 119, Nearest Station & FixMate Safety Desk will be automatically alerted with your live location unless cancelled.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              fontSize: 13.5,
+              fontSize: 12,
               color: const Color(0xFF64748B),
-              height: 1.4,
+              height: 1.35,
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
 
-          // Automatic Actions Preview Box
+          // Incident Dossier Card (Zero Overflows)
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFFEF2F2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFFECACA)),
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.bolt_rounded,
-                        color: Color(0xFFDC2626), size: 18),
-                    const SizedBox(width: 6),
-                    Text(
-                      '3 AUTOMATIC ACTIONS WILL FIRE:',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: const Color(0xFF991B1B),
-                        letterSpacing: 0.5,
+                    const Icon(
+                      Icons.location_on_rounded,
+                      size: 14,
+                      color: Color(0xFF005AC2),
+                    ),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        '24, Galle Road, Kollupitiya, Colombo 03',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDCFCE7),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        'GPS Ready',
+                        style: GoogleFonts.inter(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF15803D),
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                _buildAutoActionPreviewRow(
-                  icon: Icons.shield_rounded,
-                  title: '1. FixMate Safety Desk Dispatched',
-                  subtitle: 'Live GPS, worker profile & booking details',
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.person_outline_rounded,
+                      size: 14,
+                      color: Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        'Pro: ${widget.workerName} • ${widget.serviceName}',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFF64748B),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                _buildAutoActionPreviewRow(
-                  icon: Icons.local_police_rounded,
-                  title: '2. Kollupitiya Police Alerted',
-                  subtitle: 'Emergency SMS sent to local station',
-                ),
-                const SizedBox(height: 8),
-                _buildAutoActionPreviewRow(
-                  icon: Icons.phone_in_talk_rounded,
-                  title: '3. 119 Emergency Hotline Call',
-                  subtitle: 'Direct control room line opened instantly',
-                ),
-                const SizedBox(height: 8),
-                _buildAutoActionPreviewRow(
-                  icon: Icons.mic_rounded,
-                  title: '4. 30-Sec Audio Evidence Recording',
-                  subtitle: 'Background microphone records incident sound',
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.local_police_outlined,
+                      size: 14,
+                      color: Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        'Station: Kollupitiya Police (1.2 km)',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFF64748B),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 22),
+          const SizedBox(height: 16),
 
-          // Primary Button: "Trigger Immediately"
+          // Primary: Send Now (No 5s wait)
           SizedBox(
             width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: () => _fireEmergency(SosMode.loud),
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: _fireEmergency,
+              icon: const Icon(Icons.bolt_rounded, color: Colors.white, size: 19),
+              label: Text(
+                'Send Alert Now',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFDC2626),
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(26),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.warning_rounded, color: Colors.white, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Trigger Immediately (Loud SOS)',
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // Secondary Action: "Silent SOS Mode"
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: OutlinedButton(
-              onPressed: () => _fireEmergency(SosMode.silent),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF475569),
-                side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.2),
-                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.volume_off_rounded, size: 18, color: Color(0xFF475569)),
-                  const SizedBox(width: 8),
-                  Text(
-                    '🤫 Trigger as Silent SOS (No Sound)',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
               ),
             ),
           ),
 
           const SizedBox(height: 8),
 
-          // Cancel False Alarm Button
-          TextButton(
-            onPressed: _cancelCountdown,
-            child: Text(
-              'Cancel (I am Safe - False Alarm)',
-              style: GoogleFonts.inter(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF64748B),
+          // Secondary: Cancel (Accidental click protection)
+          SizedBox(
+            width: double.infinity,
+            height: 46,
+            child: OutlinedButton.icon(
+              onPressed: _cancelCountdown,
+              icon: const Icon(Icons.close_rounded, size: 17, color: Color(0xFF475569)),
+              label: Text(
+                'Cancel (False Alarm)',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF334155),
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.2),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(23),
+                ),
               ),
             ),
           ),
+
+          const SizedBox(height: 8),
+
+          Text(
+            'Accidental click? Tap Cancel above to abort with zero alerts sent.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 10.5,
+              color: const Color(0xFF94A3B8),
+            ),
+          ),
+          const SizedBox(height: 14),
         ],
       ),
     );
   }
 
-  Widget _buildAutoActionPreviewRow({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, size: 14, color: const Color(0xFFDC2626)),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F172A),
-                ),
-              ),
-              Text(
-                subtitle,
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  color: const Color(0xFF64748B),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   // ==========================================
-  // VIEW 2: ACTIVE EMERGENCY HUB
+  // VIEW 2: ACTIVE EMERGENCY HUB (AFTER 5s)
   // ==========================================
   Widget _buildActiveEmergencyView() {
     return ValueListenableBuilder<EmergencyIncident?>(
       valueListenable: EmergencyService.incidentNotifier,
       builder: (context, incident, _) {
-        final isSilent = incident?.mode == SosMode.silent;
-        final textColor = isSilent ? Colors.white : const Color(0xFF0F172A);
-        final subtextColor = isSilent ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+        final audioSec = incident?.audioSecondsRecorded ?? 0;
+        final isAudioRecording = incident?.audioRecordingActive ?? true;
 
         return SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. TOP STATUS BADGE
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDC2626),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AnimatedBuilder(
-                          animation: _pulseController,
-                          builder: (context, child) => Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withValues(
-                                alpha: 0.5 + (_pulseController.value * 0.5),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'LIVE SOS ACTIVE',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: 0.4,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    incident?.incidentId ?? '#SOS-99281',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: isSilent ? const Color(0xFF38BDF8) : const Color(0xFF005AC2),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              // Title
-              Text(
-                isSilent ? '🤫 Silent Emergency Active' : '🚨 Emergency Assistance Triggered',
-                style: GoogleFonts.inter(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: textColor,
-                  letterSpacing: -0.3,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                isSilent
-                    ? 'Worker has not been alerted. Help is silently tracking your location.'
-                    : 'All 3 safety systems have been notified automatically with your live location.',
-                style: GoogleFonts.inter(
-                  fontSize: 12.5,
-                  color: subtextColor,
-                  height: 1.35,
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              // Mode Switcher (Loud vs Silent)
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: isSilent ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => EmergencyService.switchMode(SosMode.loud),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          decoration: BoxDecoration(
-                            color: !isSilent ? Colors.white : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: !isSilent
-                                ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)]
-                                : [],
-                          ),
-                          child: Center(
-                            child: Text(
-                              '🔴 Loud SOS Mode',
-                              style: GoogleFonts.inter(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w700,
-                                color: !isSilent ? const Color(0xFFDC2626) : const Color(0xFF94A3B8),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => EmergencyService.switchMode(SosMode.silent),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          decoration: BoxDecoration(
-                            color: isSilent ? const Color(0xFF334155) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: isSilent
-                                ? [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)]
-                                : [],
-                          ),
-                          child: Center(
-                            child: Text(
-                              '🤫 Silent Mode (Secret)',
-                              style: GoogleFonts.inter(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w700,
-                                color: isSilent ? Colors.white : const Color(0xFF64748B),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              // 2. THE 4 AUTOMATIC STATUS CARDS (ALL 3 + AUDIO EVIDENCE)
-              _buildLiveStatusCard(
-                isSilent: isSilent,
-                icon: Icons.shield_rounded,
-                iconColor: const Color(0xFF16A34A),
-                title: 'FixMate Safety Desk (24/7)',
-                subtitle: 'Dispatched with Live GPS & Worker Profile',
-                statusText: 'AUTO-SENT',
-                statusColor: const Color(0xFF16A34A),
-              ),
-
-              const SizedBox(height: 10),
-
-              _buildLiveStatusCard(
-                isSilent: isSilent,
-                icon: Icons.local_police_rounded,
-                iconColor: const Color(0xFF005AC2),
-                title: 'Kollupitiya Police Station (1.2 km)',
-                subtitle: 'Automated GPS & Incident SMS Sent (011 257 3254)',
-                statusText: 'ALERTED',
-                statusColor: const Color(0xFF005AC2),
-              ),
-
-              const SizedBox(height: 10),
-
-              _buildLiveStatusCard(
-                isSilent: isSilent,
-                icon: Icons.phone_forwarded_rounded,
-                iconColor: const Color(0xFFD97706),
-                title: '119 National Police Hotline',
-                subtitle: 'Direct Emergency Call line initiated',
-                statusText: 'CONNECTED',
-                statusColor: const Color(0xFFD97706),
-              ),
-
-              const SizedBox(height: 10),
-
-              // Audio Evidence Recording Card
+              // 1. Red Alert Banner
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isSilent ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: incident?.audioRecordingActive == true
-                        ? const Color(0xFFDC2626)
-                        : (isSilent ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                  ),
+                  color: const Color(0xFFFEF2F2),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFFECACA), width: 1.2),
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEE2E2),
-                        borderRadius: BorderRadius.circular(10),
+                    AnimatedBuilder(
+                      animation: _pulseController,
+                      builder: (context, child) => Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFDC2626).withValues(
+                            alpha: 0.15 + (_pulseController.value * 0.2),
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.warning_rounded,
+                          color: Color(0xFFDC2626),
+                          size: 20,
+                        ),
                       ),
-                      child: const Icon(Icons.mic_rounded, size: 18, color: Color(0xFFDC2626)),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -672,35 +564,37 @@ class _EmergencySosModalState extends State<EmergencySosModal>
                         children: [
                           Row(
                             children: [
-                              Text(
-                                'Audio Evidence Recording',
-                                style: GoogleFonts.inter(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: textColor,
+                              Expanded(
+                                child: Text(
+                                  'Emergency Dispatched',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: const Color(0xFF991B1B),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              if (incident?.audioRecordingActive == true)
-                                Text(
-                                  '(${incident?.audioSecondsRecorded ?? 0}s / 30s)',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFFDC2626),
-                                  ),
+                              Text(
+                                incident?.incidentId ?? '#SOS-99281',
+                                style: GoogleFonts.inter(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: const Color(0xFF005AC2),
                                 ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            incident?.audioRecordingActive == true
-                                ? 'Recording surrounding voices for legal evidence...'
-                                : '30s Audio Saved & Uploaded to Admin file ✅',
+                            'Live GPS sent to FixMate HQ & Police 119 network.',
                             style: GoogleFonts.inter(
                               fontSize: 11,
-                              color: subtextColor,
+                              color: const Color(0xFFB91C1C),
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -709,160 +603,196 @@ class _EmergencySosModalState extends State<EmergencySosModal>
                 ),
               ),
 
-              const SizedBox(height: 14),
-
-              // 3. IMMEDIATE CALL BUTTONS
-              Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 46,
-                      child: ElevatedButton.icon(
-                        onPressed: EmergencyService.callPolice119,
-                        icon: const Icon(Icons.phone_rounded, size: 16),
-                        label: const Text('Call 119'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFDC2626),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: SizedBox(
-                      height: 46,
-                      child: OutlinedButton.icon(
-                        onPressed: EmergencyService.callLocalPoliceStation,
-                        icon: const Icon(Icons.local_police_rounded, size: 16),
-                        label: const Text('Local Station'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: isSilent ? Colors.white : const Color(0xFF005AC2),
-                          side: BorderSide(
-                            color: isSilent ? Colors.white38 : const Color(0xFF005AC2),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
               const SizedBox(height: 12),
 
-              // 4. VIEW DISPATCHED REPORT ACCORDION
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    _showReportDetails = !_showReportDetails;
-                  });
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isSilent ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: isSilent ? const Color(0xFF334155) : const Color(0xFFBFDBFE),
-                    ),
+              // SECTION: ACTIVE CHANNELS
+              Text(
+                'ACTIVE RESCUE CHANNELS',
+                style: GoogleFonts.inter(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF94A3B8),
+                  letterSpacing: 0.8,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Channel 1: Police 119
+              _buildChannelTile(
+                icon: Icons.local_police_rounded,
+                iconBg: const Color(0xFFFEE2E2),
+                iconColor: const Color(0xFFDC2626),
+                title: 'Sri Lanka Police 119',
+                status: 'Call Connected / Dialing...',
+                statusColor: const Color(0xFFDC2626),
+                actionLabel: 'Call 119',
+                actionBg: const Color(0xFFDC2626),
+                actionTextColor: Colors.white,
+                onTap: () => EmergencyService.callPolice119(),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Channel 2: FixMate Safety Desk
+              _buildChannelTile(
+                icon: Icons.support_agent_rounded,
+                iconBg: const Color(0xFFDBEAFE),
+                iconColor: const Color(0xFF005AC2),
+                title: 'FixMate Safety Desk (24/7)',
+                status: 'Live GPS & Dossier Received',
+                statusColor: const Color(0xFF15803D),
+                actionLabel: 'Call Desk',
+                actionBg: const Color(0xFF005AC2),
+                actionTextColor: Colors.white,
+                onTap: () => EmergencyService.callSafetyDesk(),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Channel 3: Nearest Station
+              _buildChannelTile(
+                icon: Icons.apartment_rounded,
+                iconBg: const Color(0xFFF1F5F9),
+                iconColor: const Color(0xFF334155),
+                title: 'Kollupitiya Police Station',
+                status: '011 257 3254 • 1.2 km away',
+                statusColor: const Color(0xFF64748B),
+                actionLabel: 'Call',
+                actionBg: const Color(0xFFF8FAFC),
+                actionBorder: const Color(0xFFCBD5E1),
+                actionTextColor: const Color(0xFF0F172A),
+                onTap: () => EmergencyService.callNearestPoliceStation(),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Channel 4: 30s Audio Recording with Equalizer
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isAudioRecording
+                        ? const Color(0xFFDC2626)
+                        : const Color(0xFFE2E8F0),
+                    width: isAudioRecording ? 1.4 : 1,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: isAudioRecording
+                            ? const Color(0xFFFEE2E2)
+                            : const Color(0xFFF1F5F9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.mic_rounded,
+                        size: 17,
+                        color: isAudioRecording
+                            ? const Color(0xFFDC2626)
+                            : const Color(0xFF475569),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.description_outlined, size: 16, color: Color(0xFF005AC2)),
-                          const SizedBox(width: 8),
                           Text(
-                            'View Dispatched Incident Report',
+                            isAudioRecording
+                                ? 'Recording Audio ($audioSec / 60s)'
+                                : '1-Min Audio Evidence Secured',
                             style: GoogleFonts.inter(
-                              fontSize: 12.5,
+                              fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: isSilent ? const Color(0xFF38BDF8) : const Color(0xFF005AC2),
+                              color: isAudioRecording
+                                  ? const Color(0xFFDC2626)
+                                  : const Color(0xFF0F172A),
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            isAudioRecording
+                                ? 'Encrypted evidence sent to safety desk'
+                                : '1-min audio saved for police & safety dossier',
+                            style: GoogleFonts.inter(
+                              fontSize: 10.5,
+                              color: const Color(0xFF64748B),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
-                      Icon(
-                        _showReportDetails
-                            ? Icons.keyboard_arrow_up_rounded
-                            : Icons.keyboard_arrow_down_rounded,
-                        color: const Color(0xFF005AC2),
-                        size: 20,
+                    ),
+                    if (isAudioRecording) ...[
+                      const SizedBox(width: 6),
+                      AnimatedBuilder(
+                        animation: _equalizerController,
+                        builder: (context, child) => Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(4, (i) {
+                            final h = 6 + (14 * ((i + _equalizerController.value) % 1.0));
+                            return Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                              width: 3,
+                              height: h,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFDC2626),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            );
+                          }),
+                        ),
                       ),
                     ],
-                  ),
+                  ],
                 ),
               ),
 
-              // Dispatched Payload Card (JSON Data View)
-              if (_showReportDetails) ...[
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isSilent ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: isSilent ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildReportRow('Customer:', '${incident?.customerName} (${incident?.customerPhone})', textColor, subtextColor),
-                      _buildReportRow('Worker:', '${incident?.workerName} • ${incident?.workerRole}', textColor, subtextColor),
-                      _buildReportRow('Location:', incident?.address ?? '24, Galle Road, Colombo 03', textColor, subtextColor),
-                      _buildReportRow('GPS Coordinates:', '${incident?.latitude}, ${incident?.longitude}', textColor, subtextColor),
-                      _buildReportRow('Booking ID:', incident?.bookingId ?? '#FM-882910', textColor, subtextColor),
-                      _buildReportRow('Nearest Station:', incident?.nearestPoliceStation ?? 'Kollupitiya Station', textColor, subtextColor),
-                      _buildReportRow('Google Maps Link:', incident?.googleMapsLink ?? 'https://maps.google.com', textColor, subtextColor),
-                    ],
-                  ),
-                ),
-              ],
+              const SizedBox(height: 14),
+
+              // SECTION: TRANSMITTED DOSSIER (WHAT ADMIN & POLICE RECEIVE)
+              _buildTransmittedDossierCard(incident),
 
               const SizedBox(height: 18),
 
-              // 5. RESOLVE / "I AM SAFE NOW" BUTTON
+              // Safe Deactivate Button
               SizedBox(
                 width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
+                height: 48,
+                child: ElevatedButton.icon(
                   onPressed: _resolveEmergency,
+                  icon: const Icon(
+                    Icons.check_circle_rounded,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    'I Am Safe Now (Mark Incident Resolved)',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF16A34A),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(26),
+                      borderRadius: BorderRadius.circular(24),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'I Am Safe Now (Deactivate SOS)',
-                        style: GoogleFonts.inter(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+
+              const SizedBox(height: 20),
             ],
           ),
         );
@@ -870,33 +800,35 @@ class _EmergencySosModalState extends State<EmergencySosModal>
     );
   }
 
-  Widget _buildLiveStatusCard({
-    required bool isSilent,
+  Widget _buildChannelTile({
     required IconData icon,
+    required Color iconBg,
     required Color iconColor,
     required String title,
-    required String subtitle,
-    required String statusText,
+    required String status,
     required Color statusColor,
+    required String actionLabel,
+    required Color actionBg,
+    Color? actionBorder,
+    required Color actionTextColor,
+    required VoidCallback onTap,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
-        color: isSilent ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isSilent ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
+              color: iconBg,
+              shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 18, color: iconColor),
+            child: Icon(icon, color: iconColor, size: 18),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -908,32 +840,46 @@ class _EmergencySosModalState extends State<EmergencySosModal>
                   style: GoogleFonts.inter(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: isSilent ? Colors.white : const Color(0xFF0F172A),
+                    color: const Color(0xFF0F172A),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 1.5),
+                const SizedBox(height: 1),
                 Text(
-                  subtitle,
+                  status,
                   style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: isSilent ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                    color: statusColor,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              statusText,
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                color: statusColor,
+          const SizedBox(width: 8),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6.5),
+                decoration: BoxDecoration(
+                  color: actionBg,
+                  borderRadius: BorderRadius.circular(16),
+                  border: actionBorder != null ? Border.all(color: actionBorder) : null,
+                ),
+                child: Text(
+                  actionLabel,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: actionTextColor,
+                  ),
+                ),
               ),
             ),
           ),
@@ -942,35 +888,166 @@ class _EmergencySosModalState extends State<EmergencySosModal>
     );
   }
 
-  Widget _buildReportRow(String label, String value, Color textColor, Color subtextColor) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.5),
-      child: Row(
+  // ==========================================
+  // TRANSMITTED DOSSIER (WHAT ADMIN & POLICE SEE)
+  // ==========================================
+  Widget _buildTransmittedDossierCard(EmergencyIncident? incident) {
+    return Container(
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 110,
-            child: Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: subtextColor,
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF005AC2).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.cloud_done_rounded,
+                  size: 16,
+                  color: Color(0xFF005AC2),
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TRANSMITTED TO FIXMATE HQ',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF005AC2),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    Text(
+                      'Live payload securely logged in Admin database',
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        color: const Color(0xFF64748B),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'SYNCED',
+                  style: GoogleFonts.inter(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF15803D),
+                  ),
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: GoogleFonts.inter(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: textColor,
-              ),
-            ),
+          const SizedBox(height: 10),
+          const Divider(height: 1, color: Color(0xFFE2E8F0)),
+          const SizedBox(height: 9),
+
+          // 1. Live GPS
+          _buildDossierRow(
+            icon: Icons.location_on_rounded,
+            label: 'Live GPS',
+            value: '6.9015° N, 79.8529° E (24, Galle Rd, Col 03)',
+          ),
+          const SizedBox(height: 7),
+
+          // 2. Customer
+          _buildDossierRow(
+            icon: Icons.person_rounded,
+            label: 'Customer',
+            value: '${incident?.customerName ?? "Alex"} (+94 77 123 4567 • #CUST-8492)',
+          ),
+          const SizedBox(height: 7),
+
+          // 3. Reported Pro Under Watch
+          _buildDossierRow(
+            icon: Icons.engineering_rounded,
+            label: 'Reported Pro',
+            value: '${widget.workerName} (${widget.workerRole} • +94 71 889 2341)',
+          ),
+          const SizedBox(height: 7),
+
+          // 4. Booking ID
+          _buildDossierRow(
+            icon: Icons.receipt_long_rounded,
+            label: 'Booking ID',
+            value: '${incident?.bookingId ?? "#FM-882910"} • ${widget.serviceName}',
+          ),
+          const SizedBox(height: 7),
+
+          // 5. Police Dispatch Net
+          _buildDossierRow(
+            icon: Icons.local_police_rounded,
+            label: 'Police Net',
+            value: 'Sri Lanka 119 + Kollupitiya Station (1.2 km)',
+          ),
+          const SizedBox(height: 7),
+
+          // 6. Evidence Audio
+          _buildDossierRow(
+            icon: Icons.mic_rounded,
+            label: 'Audio Log',
+            value: '1-min (60s) encrypted audio file linked to FIR dossier',
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDossierRow({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 13, color: const Color(0xFF64748B)),
+        const SizedBox(width: 6),
+        SizedBox(
+          width: 78,
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

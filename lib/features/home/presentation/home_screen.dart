@@ -6,6 +6,8 @@ import '../../../core/routes/app_routes.dart';
 import '../../../core/services/session_manager.dart';
 import '../../../core/widgets/fix_mate_bottom_nav.dart';
 import '../../booking/presentation/book_service_screen.dart';
+import '../../../core/services/location_service.dart';
+import '../../location/presentation/widgets/enable_location_modal.dart';
 import '../../safety/presentation/widgets/sos_button.dart';
 import 'all_categories_screen.dart';
 
@@ -181,6 +183,28 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadUser();
     _startBannerAutoScroll();
+    _checkLocationOnStartup();
+  }
+
+  void _checkLocationOnStartup() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      if (LocationService.hasPromptedThisSession) return;
+      final isReady = await LocationService.isLocationReady();
+      if (!isReady && mounted) {
+        // Small delay for smooth screen entry after splash
+        await Future.delayed(const Duration(milliseconds: 700));
+        if (mounted) {
+          EnableLocationModal.show(
+            context,
+            onLocationEnabled: () {
+              if (mounted) setState(() {});
+            },
+            onManualCitySelected: _showCityPicker,
+          );
+        }
+      }
+    });
   }
 
   void _startBannerAutoScroll() {
@@ -314,6 +338,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _promptLocationModal() {
+    if (!mounted) return;
+    EnableLocationModal.show(
+      context,
+      onLocationEnabled: () {
+        if (mounted) setState(() {});
+      },
+      onManualCitySelected: _showCityPicker,
     );
   }
 
@@ -702,58 +737,93 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      InkWell(
-                        onLongPress: _handleLogout,
-                        borderRadius: BorderRadius.circular(8),
-                        child: Row(
-                          children: [
-                            Text(
-                              'Good morning, $_userName',
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0F172A),
-                                letterSpacing: -0.4,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            const Text('👋', style: TextStyle(fontSize: 20)),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-
-                      // Interactive City Selector Pill
-                      InkWell(
-                        onTap: _showCityPicker,
-                        borderRadius: BorderRadius.circular(10),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        InkWell(
+                          onLongPress: _handleLogout,
+                          borderRadius: BorderRadius.circular(8),
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.location_on_outlined, color: Color(0xFF005AC2), size: 16),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$_userCity, ${CountryData.selectedCountry.name}',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF005AC2),
-                                  fontWeight: FontWeight.w600,
+                              Flexible(
+                                child: Text(
+                                  'Good morning, $_userName',
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0F172A),
+                                    letterSpacing: -0.4,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 2),
-                              const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF005AC2), size: 18),
+                              const SizedBox(width: 4),
+                              const Text('👋', style: TextStyle(fontSize: 18)),
                             ],
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 3),
+
+                        // Interactive City Selector Pill
+                        InkWell(
+                          onTap: () async {
+                            final isReady = await LocationService.isLocationReady();
+                            if (!mounted) return;
+                            if (!isReady) {
+                              _promptLocationModal();
+                            } else {
+                              _showCityPicker();
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(10),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: ValueListenableBuilder<bool>(
+                              valueListenable: LocationService.isGpsEnabledNotifier,
+                              builder: (context, isGpsOn, _) {
+                                return Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      isGpsOn ? Icons.my_location_rounded : Icons.location_on_outlined,
+                                      color: isGpsOn ? const Color(0xFF16A34A) : const Color(0xFF005AC2),
+                                      size: 15,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        '$_userCity, ${CountryData.selectedCountry.name}',
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          color: isGpsOn ? const Color(0xFF16A34A) : const Color(0xFF005AC2),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      color: isGpsOn ? const Color(0xFF16A34A) : const Color(0xFF005AC2),
+                                      size: 16,
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
 
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       const SosButton(
                         workerName: 'Nimal Perera',

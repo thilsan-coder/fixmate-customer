@@ -117,7 +117,7 @@ class EmergencyService {
   /// 1. Admin Auto-Dispatch (Payload generated with GPS, Worker & Customer data)
   /// 2. Nearest Police Station Auto-Alert (Kollupitiya Police Station)
   /// 3. Auto-Trigger 119 Police Hotline Call
-  /// 4. 30-Second Background Audio Evidence Recording
+  /// 4. 1-Minute Background Audio Evidence Recording
   static Future<EmergencyIncident> triggerEmergency({
     required String workerName,
     required String workerRole,
@@ -171,7 +171,7 @@ class EmergencyService {
     _activeIncident = incident;
     incidentNotifier.value = incident;
 
-    // Start 30-Second Audio Evidence Recording
+    // Start 1-Minute (60s) Audio Evidence Recording
     _startAudioRecording();
 
     // Auto-launch Police 119 call if requested
@@ -190,10 +190,10 @@ class EmergencyService {
         return;
       }
       final currentSec = _activeIncident!.audioSecondsRecorded + 1;
-      if (currentSec >= 30) {
+      if (currentSec >= 60) {
         _activeIncident = _activeIncident!.copyWith(
           audioRecordingActive: false,
-          audioSecondsRecorded: 30,
+          audioSecondsRecorded: 60,
         );
         incidentNotifier.value = _activeIncident;
         timer.cancel();
@@ -230,6 +230,20 @@ class EmergencyService {
     return false;
   }
 
+  static Future<bool> callNearestPoliceStation() => callLocalPoliceStation();
+
+  /// Launch FixMate 24/7 Safety Desk
+  static Future<bool> callSafetyDesk() async {
+    final uri = Uri.parse('tel:0112573254');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
   /// Switch between Loud SOS and Silent Mode
   static void switchMode(SosMode mode) {
     if (_activeIncident != null) {
@@ -238,9 +252,18 @@ class EmergencyService {
     }
   }
 
-  /// Resolve and safely deactivate emergency
+  /// Permanent Admin Audit Log - incidents are NEVER deleted from Admin!
+  static final List<EmergencyIncident> auditLog = [];
+
+  /// Resolve and safely deactivate emergency (Updates status, NEVER deletes from Admin)
   static void resolveEmergency() {
     _audioTimer?.cancel();
+    if (_activeIncident != null) {
+      final archivedIncident = _activeIncident!.copyWith(
+        audioRecordingActive: false,
+      );
+      auditLog.add(archivedIncident);
+    }
     _activeIncident = null;
     incidentNotifier.value = null;
   }
